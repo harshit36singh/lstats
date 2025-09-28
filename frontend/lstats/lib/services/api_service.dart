@@ -1,0 +1,50 @@
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class ApiService {
+  static const baseurl = "http://localhost:8080";
+
+  // Login returns only JWT now
+  static Future<String> login(String username, String password) async {
+    try {
+      final res = await http.post(
+        Uri.parse("$baseurl/auth/login"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"username": username, "password": password}),
+      );
+
+      print("Status: ${res.statusCode}, Body: ${res.body}"); // debug output
+
+      if (res.statusCode == 200 && res.body.isNotEmpty) {
+        final body = jsonDecode(res.body);
+
+        // Save JWT in SharedPreferences
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        await pref.setString("jwt", body["token"]);
+
+        return body["token"]; // return JWT
+      } else {
+        throw Exception(
+            "Login failed. Status: ${res.statusCode}, Body: ${res.body}");
+      }
+    } catch (e) {
+      throw Exception("Login error: $e");
+    }
+  }
+
+  // Registration remains the same
+  static Future<void> register(
+      String username, String email, String password) async {
+    final response = await http.post(
+      Uri.parse("$baseurl/auth/register"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(
+          {"username": username, "email": email, "password": password}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Registration failed: ${response.body}");
+    }
+  }
+}

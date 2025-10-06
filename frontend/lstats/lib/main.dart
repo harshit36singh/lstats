@@ -21,8 +21,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'LStats',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(primarySwatch: Colors.teal,
-        scaffoldBackgroundColor: Colors.black),
+      
         home: LoginPage(),
       ),
     );

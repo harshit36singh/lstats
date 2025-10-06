@@ -94,8 +94,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               int.parse(key) * 1000,
             );
             final normalizedDate = DateTime(date.year, date.month, date.day);
-
-            // Bucket values for shades
             int v = value as int;
             if (v >= 10) {
               v = 10;

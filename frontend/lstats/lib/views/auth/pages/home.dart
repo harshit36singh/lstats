@@ -567,8 +567,6 @@ class _HomescreenState extends State<Homescreen> {
       final value = activity[date] ?? 0;
       last60Days.add(MapEntry(date, value));
     }
-
-    // Calculate max value for scaling
     final maxValue = last60Days.isEmpty
         ? 0
         : last60Days.map((e) => e.value).reduce((a, b) => a > b ? a : b);

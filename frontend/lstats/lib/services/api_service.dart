@@ -14,16 +14,14 @@ class ApiService {
         body: jsonEncode({"username": username, "password": password}),
       );
 
-      print("Status: ${res.statusCode}, Body: ${res.body}"); // debug output
+      print("Status: ${res.statusCode}, Body: ${res.body}"); 
 
       if (res.statusCode == 200 && res.body.isNotEmpty) {
         final body = jsonDecode(res.body);
-
-        // Save JWT in SharedPreferences
         SharedPreferences pref = await SharedPreferences.getInstance();
         await pref.setString("jwt", body["token"]);
 
-        return body["token"]; // return JWT
+        return body["token"]; 
       } else {
         throw Exception(
             "Login failed. Status: ${res.statusCode}, Body: ${res.body}");
@@ -32,19 +30,21 @@ class ApiService {
       throw Exception("Login error: $e");
     }
   }
-
-  // Registration remains the same
   static Future<void> register(
-      String username, String email, String password) async {
+      String username, String email, String password,String collegename) async {
     final response = await http.post(
       Uri.parse("$baseurl/auth/register"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode(
-          {"username": username, "email": email, "password": password}),
+          {"username": username, "email": email, "password": password,"collegename":collegename}),
     );
 
     if (response.statusCode != 200) {
       throw Exception("Registration failed: ${response.body}");
     }
   }
-}
+
+ 
+
+  }
+

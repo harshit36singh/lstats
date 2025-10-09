@@ -19,12 +19,12 @@ class AuthViewModel extends ChangeNotifier {
     isLoading = false;
     notifyListeners();
   }
-Future<void> register(String username, String email, String password) async {
+Future<void> register(String username, String email, String password,String clgname) async {
     isLoading = true;
     notifyListeners();
 
     try {
-      await ApiService.register(username, email, password);
+      await ApiService.register(username, email, password,clgname);
       // Optional: you can automatically log in after register
       // await login(username, password);
     } catch (e) {

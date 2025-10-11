@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
+import '';
 
 class Homescreen extends StatefulWidget {
   final String name;
@@ -108,16 +109,7 @@ class _HomescreenState extends State<Homescreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(29)),
-        child: const Icon(Iconsax.add5, color: Colors.white, size: 35),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: _buildBottomNavBar(),
-      backgroundColor: const Color.fromARGB(255, 63, 62, 62),
+      backgroundColor: const Color(0xFFFAFAFA),
       body: SafeArea(
         child: Column(
           children: [
@@ -200,6 +192,7 @@ class _HomescreenState extends State<Homescreen> {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
                       'Statistics',
@@ -211,7 +204,7 @@ class _HomescreenState extends State<Homescreen> {
                       ),
                     ),
                     SizedBox(height: 15),
-                    _buildDottedActivityChart(),
+                   _buildDottedActivityChart(),
                     const SizedBox(height: 24),
                     Row(
                       children: [
@@ -462,62 +455,9 @@ class _HomescreenState extends State<Homescreen> {
       width: 6,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          if (showLabel)
-            Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  margin: const EdgeInsets.only(bottom: 4),
-                  decoration: BoxDecoration(
-                    color: peakColor,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: peakColor.withOpacity(0.3),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        labelText,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          height: 1.0,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      const Text(
-                        'Questions',
-                        style: TextStyle(
-                          color: Color(0xFF424242),
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                CustomPaint(
-                  size: const Size(2, 14),
-                  painter: DottedLinePainter(
-                    color: peakColor,
-                    dotRadius: 1.3,
-                    spacing: 3.0,
-                  ),
-                ),
-                const SizedBox(height: 6),
-              ],
-            ),
+          
           SizedBox(
             height: maxHeight,
             child: Align(
@@ -717,7 +657,7 @@ class _HomescreenState extends State<Homescreen> {
 
                       return Container(
                         width: 6,
-                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                        margin: const EdgeInsets.symmetric(horizontal: 1),
                         child: Center(
                           child: Text(
                             label,
@@ -725,7 +665,7 @@ class _HomescreenState extends State<Homescreen> {
                               color: date.day == 1
                                   ? const Color(0xFF212121)
                                   : const Color(0xFF757575),
-                              fontSize: date.day == 1 ? 11 : 10,
+                              fontSize: date.day == 1 ? 5 : 8,
                               fontWeight: date.day == 1
                                   ? FontWeight.w600
                                   : FontWeight.w500,
@@ -971,83 +911,8 @@ Widget _buildCircularDifficulty({
       ),
     );
   }
-
-  Widget _buildBottomNavBar() {
-    return Container(
-      decoration: BoxDecoration(
-        
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(35),
-          topRight: Radius.circular(35),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(35),
-          topRight: Radius.circular(35),
-        ),
-        child: BottomAppBar(
-          shape: const CircularNotchedRectangle(),
-          notchMargin: 8,
-          color: Colors.white,
-          elevation: 0,
-          child: Container(
-            height: 70,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(Iconsax.home, 'Home', true),
-                _buildNavItem(Iconsax.calendar, 'Daily', false),
-                const SizedBox(width: 50),
-                _buildNavItem(Iconsax.ranking4, 'Leaderboard', false),
-                _buildNavItem(Iconsax.favorite_chart, 'Friends', false),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(IconData icon, String label, bool isActive) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        color: isActive ? Colors.black : Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: isActive ? Colors.white : const Color(0xFF9CA3AF),
-            size: 25,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              color: isActive ? Colors.white : const Color(0xFF9CA3AF),
-              fontSize: 11,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
+
 
 // Custom painter for smooth dotted lines
 class DottedLinePainter extends CustomPainter {

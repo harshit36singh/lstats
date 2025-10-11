@@ -10,7 +10,6 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // ApiService.login now returns only token
       token = await ApiService.login(username, password);
     } catch (e) {
       throw Exception("Login error: $e");

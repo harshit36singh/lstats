@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lstats/viewmodels/auth_viewmodels.dart';
 import 'package:lstats/views/auth/pages/home.dart';
+import 'package:lstats/views/auth/pages/pagenav.dart';
 import 'package:provider/provider.dart';
 import 'package:rive/rive.dart' hide LinearGradient;
 
@@ -246,7 +247,7 @@ class _LoginPageState extends State<LoginPage> {
                                
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => Homescreen(name:user ),
+                                      builder: (context) => MainNavPage(uname: user),
                                     ),
                                   );
                                 }

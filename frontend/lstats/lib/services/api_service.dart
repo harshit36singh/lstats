@@ -14,14 +14,20 @@ class ApiService {
         body: jsonEncode({"username": username, "password": password}),
       );
 
-      print("Status: ${res.statusCode}, Body: ${res.body}"); 
 
       if (res.statusCode == 200 && res.body.isNotEmpty) {
         final body = jsonDecode(res.body);
-        SharedPreferences pref = await SharedPreferences.getInstance();
-        await pref.setString("jwt", body["token"]);
+        final token = body["token"];
+        final user = body["user"];
+        final userId = user["id"];
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString("jwt", token);
+        await prefs.setInt("userId", userId);
+        await prefs.setString("username", user["username"]);
+        await prefs.setString("email", user["email"]);
+        await prefs.setString("college", user["collegename"]);
 
-        return body["token"]; 
+        return token; 
       } else {
         throw Exception(
             "Login failed. Status: ${res.statusCode}, Body: ${res.body}");
@@ -43,8 +49,27 @@ class ApiService {
       throw Exception("Registration failed: ${response.body}");
     }
   }
+   }
 
- 
+class AuthStorage{
+
+  static Future<int?> getuserid() async {
+    final p=await SharedPreferences.getInstance();
+    return p.getInt("userId");
+  }
+  static Future<String?> getToken() async{
+    final p=await SharedPreferences.getInstance();
+    return p.getString("jwt");
 
   }
+  static Future<String?> getUsername() async{
+    final p=await SharedPreferences.getInstance();
+    return  p.getString("username");
+  }
 
+  static Future<void> logout() async{
+    final p=await SharedPreferences.getInstance();
+    await p.clear();
+  }
+
+}

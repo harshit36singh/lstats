@@ -55,8 +55,7 @@ public class leaderboard {
     private final RestTemplate restTemplate = new RestTemplate();
     private final Map<String, Leader> leadercache = new ConcurrentHashMap<>();
 
-    @Scheduled(fixedRate = 3600000)
-    private void refreshleaderboard() {
+    @Scheduled(fixedRate = 3600000) void refreshleaderboard() {
         List<User> users = userRepository.findAll();
         for (User user : users) {
             try {
@@ -91,8 +90,11 @@ public class leaderboard {
     @GetMapping("/global")
     public List<Map<String, Object>> globalleaberboard(@RequestParam(required = false) String collegename) {
         List<Map<String, Object>> list = new ArrayList<>();
+        
         leadercache.forEach((username, entry) -> {
+            User user=userRepository.findByUsername(username).orElse(null);
             Map<String, Object> e = new HashMap<>();
+            e.put("id", user.getId());
             e.put("username", username);
             e.put("solved", entry.gettotalsolved());
             e.put("avatar", entry.img != null ? entry.img : "");

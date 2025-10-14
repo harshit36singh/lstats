@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:lstats/viewmodels/auth_viewmodels.dart';
 import 'package:lstats/widgets/autocomplete.dart';
 import 'package:provider/provider.dart';
@@ -179,8 +180,6 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
 
-          
-
                 _buildTextField(
                   controller: username,
                   focusNode: _usernameFocusNode,
@@ -265,6 +264,12 @@ class _RegisterPageState extends State<RegisterPage> {
                             _passwordFocusNode.unfocus();
 
                             try {
+                              await http.get(
+                                Uri.parse(
+                                  'https://lstatsbackend-production.up.railway.app/leaderboard/refresh',
+                                ),
+                              );
+
                               await auth.register(
                                 username.text,
                                 email.text,
@@ -284,7 +289,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text("Registration successful!"),
-                                    backgroundColor: Color(0xFF00C853), // Success green
+                                    backgroundColor: Color(
+                                      0xFF00C853,
+                                    ), // Success green
                                   ),
                                 );
                                 Navigator.pop(context);
@@ -298,7 +305,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(e.toString()),
-                                    backgroundColor: const Color(0xFFFF6B6B), // Error red-pink
+                                    backgroundColor: const Color(
+                                      0xFFFF6B6B,
+                                    ), // Error red-pink
                                   ),
                                 );
                               }
@@ -321,7 +330,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1A1A1A), // Dark text on bright button
+                                  color: Color(
+                                    0xFF1A1A1A,
+                                  ), // Dark text on bright button
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -399,8 +410,9 @@ class _RegisterPageState extends State<RegisterPage> {
         controller: controller,
         focusNode: focusNode,
         obscureText: isPassword,
-        keyboardType:
-            isPassword ? TextInputType.text : TextInputType.emailAddress,
+        keyboardType: isPassword
+            ? TextInputType.text
+            : TextInputType.emailAddress,
         style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w500,
@@ -423,7 +435,10 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Color(0xFFFFA116), width: 2), // LeetCode orange focus
+            borderSide: const BorderSide(
+              color: Color(0xFFFFA116),
+              width: 2,
+            ), // LeetCode orange focus
           ),
           filled: true,
           fillColor: const Color(0xFF2D2D2D),

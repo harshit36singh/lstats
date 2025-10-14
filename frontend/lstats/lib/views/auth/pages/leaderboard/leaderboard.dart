@@ -1,6 +1,10 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
+import 'package:lstats/services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Leaderboard extends StatefulWidget {
   const Leaderboard({super.key});
@@ -14,11 +18,21 @@ class _LeaderboardState extends State<Leaderboard> {
   bool isLoading = true;
   List<dynamic> filtered = [];
   String searchQuery = '';
+  int? currentuserid;
 
   @override
   void initState() {
     super.initState();
     fetchLeaderboard();
+    loadcurrentuser();
+  }
+
+  Future<void> loadcurrentuser() async {
+    final id = await AuthStorage.getuserid();
+    setState(() {
+      currentuserid = id;
+    });
+    print("Loaded current user id: $currentuserid");
   }
 
   Future<void> fetchLeaderboard() async {
@@ -45,6 +59,70 @@ class _LeaderboardState extends State<Leaderboard> {
     }
   }
 
+  Future<void> sendFriendRequest(int receiverId) async {
+    print("receiverid : $receiverId");
+    if (currentuserid == null) return;
+
+    final url = Uri.parse(
+      'https://lstatsbackend-production.up.railway.app/friends/send?senderid=$currentuserid&receiverid=$receiverId',
+    );
+
+    try {
+      final response = await http.post(url);
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Friend request sent!"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed: ${response.body}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> _refreshData() async {
+    try {
+      await http.post(
+        Uri.parse(
+          'https://lstatsbackend-production.up.railway.app/leaderboard/refresh',
+        ),
+      );
+      await fetchLeaderboard();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Leaderboard refreshed!'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error refreshing: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to refresh'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   void _filter(String query) {
     setState(() {
       searchQuery = query;
@@ -62,317 +140,292 @@ class _LeaderboardState extends State<Leaderboard> {
       backgroundColor: const Color(0xFFFAFAFA),
       body: Column(
         children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              onChanged: _filter,
-              decoration: InputDecoration(
-                hintText: 'Search user...',
-                hintStyle: const TextStyle(color: Colors.black45),
-                prefixIcon: const Icon(Icons.search, color: Colors.black54),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.black87, width: 2),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-            ),
-          ),
+         Padding(
+  padding: const EdgeInsets.all(16),
+  child: Expanded(
+    child: TextField(
+      onChanged: _filter,
+      decoration: InputDecoration(
+        hintText: 'Search user...',
+        hintStyle: const TextStyle(color: Colors.black45),
+        prefixIcon: const Icon(Icons.search, color: Colors.black54),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+         
+          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+        enabledBorder: OutlineInputBorder(
+         
+          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+        focusedBorder: OutlineInputBorder(
+         
+          borderSide: const BorderSide(color: Colors.black87, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+      ),
+    ),
+  ),
+),
           Expanded(
             child: isLoading
                 ? const Center(
                     child: CircularProgressIndicator(color: Colors.black87),
                   )
                 : filtered.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off_rounded,
-                              size: 64,
-                              color: Colors.grey.shade400,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              searchQuery.isEmpty
-                                  ? 'No data found'
-                                  : 'No users found for "$searchQuery"',
-                              style: const TextStyle(
-                                color: Colors.black54,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_off_rounded,
+                          size: 64,
+                          color: Colors.grey.shade400,
                         ),
-                      )
-                    : SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            if (searchQuery.isEmpty && filtered.length >= 3)
-                              _buildPodium(),
-                            _buildLeaderboardList(),
-                          ],
+                        const SizedBox(height: 16),
+                        Text(
+                          searchQuery.isEmpty
+                              ? 'No data found'
+                              : 'No users found for "$searchQuery"',
+                          style: const TextStyle(
+                            color: Colors.black54,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
+                      ],
+                    ),
+                  )
+                : SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        if (searchQuery.isEmpty && filtered.length >= 3)
+                          _buildPodium(),
+                        _buildLeaderboardList(),
+                      ],
+                    ),
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPodium() {
-    final first = filtered.length > 0 ? filtered[0] : null;
-    final second = filtered.length > 1 ? filtered[1] : null;
-    final third = filtered.length > 2 ? filtered[2] : null;
+Widget _buildPodium() {
+  final first = filtered.isNotEmpty ? filtered[0] : null;
+  final second = filtered.length > 1 ? filtered[1] : null;
+  final third = filtered.length > 2 ? filtered[2] : null;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
+  TextStyle rankStyle = const TextStyle(
+    fontSize: 72,
+    fontWeight: FontWeight.w900,
+    color: Colors.black,
+    letterSpacing: -2,
+  );
+
+  TextStyle nameStyle = const TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w800,
+    color: Colors.black,
+  );
+
+  TextStyle pointsStyle = const TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    color: Colors.black,
+  );
+
+  return Column(
+    children: [
+      if (first != null)
+        Container(
+          width: double.infinity,
+          color: const Color(0xFFE6542B),
+          padding: const EdgeInsets.symmetric(vertical: 30),
+          child: Column(
             children: [
-              if (second != null)
-                _buildPodiumUser(second, 2, 140, const Color(0xFF94A3B8)),
-              const SizedBox(width: 12),
-              if (first != null)
-                _buildPodiumUser(first, 1, 180, const Color(0xFFFBBF24)),
-              const SizedBox(width: 12),
-              if (third != null)
-                _buildPodiumUser(third, 3, 120, const Color(0xFFD97706)),
+              Text("1", style: rankStyle),
+              const SizedBox(height: 4),
+              CircleAvatar(
+                radius: 45,
+                backgroundImage: NetworkImage(
+                  first['avatar'] ?? 'https://via.placeholder.com/150',
+                ),
+                backgroundColor: Colors.white,
+              ),
+              const SizedBox(height: 10),
+              Text(first['username'] ?? 'Unknown', style: nameStyle),
+              Text("${first['points']} pts", style: pointsStyle),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPodiumUser(dynamic user, int position, double height, Color podiumColor) {
-    final avatar = user['avatar'] ?? 'https://via.placeholder.com/150';
-    final username = user['username'] ?? 'Unknown';
-    final points = user['points'] ?? 0;
-
-    return SizedBox(
-      width: 100,
-      child: Column(
+        ),
+      Row(
         children: [
-          if (position == 1)
-            Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFBBF24),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFBBF24).withOpacity(0.4),
-                    blurRadius: 12,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.emoji_events,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [podiumColor, podiumColor.withOpacity(0.7)],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: podiumColor.withOpacity(0.3),
-                      blurRadius: 12,
-                      spreadRadius: 2,
+          if (second != null)
+            Expanded(
+              child: Container(
+                color: const Color(0xFF03A9F4),
+                padding: const EdgeInsets.symmetric(vertical: 25),
+                child: Column(
+                  children: [
+                    Text("2", style: rankStyle.copyWith(fontSize: 60)),
+                    const SizedBox(height: 4),
+                    CircleAvatar(
+                      radius: 35,
+                      backgroundImage: NetworkImage(
+                        second['avatar'] ??
+                            'https://via.placeholder.com/150',
+                      ),
+                      backgroundColor: Colors.white,
                     ),
+                    const SizedBox(height: 8),
+                    Text(second['username'] ?? 'Unknown', style: nameStyle),
+                    Text("${second['points']} pts", style: pointsStyle),
                   ],
                 ),
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: CircleAvatar(
-                    radius: position == 1 ? 34 : 30,
-                    backgroundImage: NetworkImage(avatar),
-                    backgroundColor: Colors.grey.shade200,
-                  ),
+              ),
+            ),
+          if (third != null)
+            Expanded(
+              child: Container(
+                color: const Color(0xFFFFC107),
+                padding: const EdgeInsets.symmetric(vertical: 25),
+                child: Column(
+                  children: [
+                    Text("3", style: rankStyle.copyWith(fontSize: 60)),
+                    const SizedBox(height: 4),
+                    CircleAvatar(
+                      radius: 35,
+                      backgroundImage: NetworkImage(
+                        third['avatar'] ??
+                            'https://via.placeholder.com/150',
+                      ),
+                      backgroundColor: Colors.white,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(third['username'] ?? 'Unknown', style: nameStyle),
+                    Text("${third['points']} pts", style: pointsStyle),
+                  ],
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            username,
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
-              ),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF8B5CF6).withOpacity(0.3),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.stars_rounded,
-                  size: 14,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '$points',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          CustomPaint(
-            size: Size(100, height),
-            painter: HexagonPodiumPainter(
-              color: podiumColor,
-              position: position,
-            ),
-          ),
         ],
       ),
-    );
-  }
+    ],
+  );
+}
 
-  Widget _buildLeaderboardList() {
-    final startIndex = searchQuery.isEmpty && filtered.length > 3 ? 3 : 0;
-    final displayUsers = filtered.length > startIndex ? filtered.sublist(startIndex) : [];
 
-    if (displayUsers.isEmpty) return const SizedBox.shrink();
+ Widget _buildLeaderboardList() {
+  final startIndex = searchQuery.isEmpty && filtered.length > 3 ? 3 : 0;
+  final displayUsers = filtered.length > startIndex
+      ? filtered.sublist(startIndex)
+      : [];
 
-    return Padding(
-     padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-      child: Column(
-        children: displayUsers.asMap().entries.map((entry) {
-          final index = entry.key;
-          final user = entry.value;
-          final avatar = user['avatar'] ?? 'https://via.placeholder.com/150';
-          final username = user['username'] ?? 'Unknown';
-          final points = user['points'] ?? 0;
-          final rank = user['rank'] ?? (startIndex + index + 1);
+  if (displayUsers.isEmpty) return const SizedBox.shrink();
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE5E7EB)),
+  // A set of nice, solid accent colors
+  final List<Color> solidColors = [
+  const Color(0xFFDFAF00), // Muted Amber
+  const Color(0xFF64B5F6), // Soft Blue
+  const Color(0xFF81C784), // Soft Green
+  const Color(0xFFFF8A65), // Muted Orange
+  const Color(0xFF9575CD), // Soft Purple
+  const Color(0xFFF48FB1), // Soft Pink
+  const Color(0xFF4DD0E1), // Muted Cyan
+  const Color(0xFF66BB6A), // Muted Green
+  const Color(0xFFFFB74D), // Soft Orange
+  const Color(0xFF42A5F5), // Soft Blue
+];
+
+
+  return ListView.builder(
+    physics: const NeverScrollableScrollPhysics(),
+    shrinkWrap: true,
+    padding: EdgeInsets.zero,
+    itemCount: displayUsers.length,
+    itemBuilder: (context, index) {
+      final user = displayUsers[index];
+      final rank = startIndex + index + 1;
+      final color = solidColors[index % solidColors.length]; // cycle colors
+
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: color,
+          // No margin, no border radius → seamless stacked blocks
+        ),
+        child: Row(
+          children: [
+            Text(
+              '$rank',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
+              ),
             ),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 32,
-                  child: Text(
-                    '$rank',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black54,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                CircleAvatar(
-                  radius: 24,
-                  backgroundImage: NetworkImage(avatar),
-                  backgroundColor: Colors.grey.shade200,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    username,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF8B5CF6),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.stars_rounded,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$points',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            const SizedBox(width: 14),
+            CircleAvatar(
+              radius: 20,
+              backgroundImage: NetworkImage(
+                user['avatar'] ?? 'https://via.placeholder.com/150',
+              ),
+              backgroundColor: Colors.white,
             ),
-          );
-        }).toList(),
-      ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                user['username'] ?? 'Unknown',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: 5,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                "${user['points']} pts",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+  void _showProfileDialog(user) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadiusGeometry.circular(10),
+          ),
+
+          child: Container(),
+        );
+      },
     );
   }
 }
@@ -389,10 +442,7 @@ class HexagonPodiumPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          color.withOpacity(0.9),
-          color.withOpacity(0.6),
-        ],
+        colors: [color.withOpacity(0.9), color.withOpacity(0.6)],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
       ..style = PaintingStyle.fill;
 

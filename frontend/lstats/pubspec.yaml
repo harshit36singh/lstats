@@ -42,6 +42,9 @@ dependencies:
   rive: ^0.11.17
   iconsax: ^0.0.8
   flutter_typeahead: ^5.2.0
+  animated_text_kit: ^4.3.0
+  flutter_html: ^3.0.0
+  url_launcher: ^6.3.2
 
 
 dev_dependencies:
@@ -54,6 +57,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -62,12 +66,13 @@ dev_dependencies:
 flutter:
   assets:
     - assets/a.riv
- 
-
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
+
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/lim.jpg"
 
   # To add assets to your application, add an assets section, like this:
   # assets:

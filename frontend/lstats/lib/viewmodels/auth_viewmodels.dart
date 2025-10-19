@@ -12,26 +12,32 @@ class AuthViewModel extends ChangeNotifier {
     try {
       token = await ApiService.login(username, password);
     } catch (e) {
-      throw Exception("Login error: $e");
+      token=null;
+      throw Exception("Login error");
     }
-
-    isLoading = false;
-    notifyListeners();
+finally
+{    isLoading = false;
+    notifyListeners();}
   }
-Future<void> register(String username, String email, String password,String clgname) async {
+
+  Future<void> register(
+    String username,
+    String email,
+    String password,
+    String clgname,
+  ) async {
     isLoading = true;
     notifyListeners();
 
     try {
-      await ApiService.register(username, email, password,clgname);
-      // Optional: you can automatically log in after register
-      // await login(username, password);
+      await ApiService.register(username, email, password, clgname);
+     
     } catch (e) {
-      throw Exception("Registration error: $e");
+      token = null;
+      rethrow;
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
-
-    isLoading = false;
-    notifyListeners();
   }
 }
-

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lstats/viewmodels/auth_viewmodels.dart';
+import 'package:lstats/views/auth/login_page.dart';
+import 'package:lstats/views/auth/pages/home.dart';
 import 'package:lstats/widgets/autocomplete.dart';
 import 'package:provider/provider.dart';
-import 'package:rive/rive.dart' hide LinearGradient;
+import 'package:animated_text_kit/animated_text_kit.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -18,114 +20,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController password = TextEditingController();
   final TextEditingController clgname = TextEditingController();
 
-  // Rive controllers
-  StateMachineController? _controller;
-
-  // State machine inputs
-  SMIInput<bool>? _isChecking;
-  SMIInput<bool>? _isHandsUp;
-  SMIInput<double>? _numLook;
-  SMITrigger? _trigSuccess;
-  SMITrigger? _trigFail;
-
-  final FocusNode _usernameFocusNode = FocusNode();
-  final FocusNode _emailFocusNode = FocusNode();
-  final FocusNode _passwordFocusNode = FocusNode();
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Username focus listener
-    _usernameFocusNode.addListener(() {
-      if (_isChecking != null) {
-        _isChecking!.value = _usernameFocusNode.hasFocus;
-        if (_usernameFocusNode.hasFocus && _isHandsUp != null) {
-          _isHandsUp!.value = false;
-        }
-      }
-    });
-
-    // Email focus listener
-    _emailFocusNode.addListener(() {
-      if (_isChecking != null) {
-        _isChecking!.value = _emailFocusNode.hasFocus;
-        if (_emailFocusNode.hasFocus && _isHandsUp != null) {
-          _isHandsUp!.value = false;
-        }
-      }
-    });
-
-    // Password focus listener
-    _passwordFocusNode.addListener(() {
-      if (_isHandsUp != null) {
-        _isHandsUp!.value = _passwordFocusNode.hasFocus;
-        if (_passwordFocusNode.hasFocus && _isChecking != null) {
-          _isChecking!.value = false;
-        }
-      }
-    });
-
-    // Username text listener for eye tracking
-    username.addListener(() {
-      if (_numLook != null && _usernameFocusNode.hasFocus) {
-        _numLook!.value = username.text.length.toDouble() * 3;
-      }
-    });
-
-    // Email text listener for eye tracking
-    email.addListener(() {
-      if (_numLook != null && _emailFocusNode.hasFocus) {
-        _numLook!.value = email.text.length.toDouble() * 3;
-      }
-    });
-  }
-
-  void _onRiveInit(Artboard artboard) {
-    final possibleNames = [
-      'State Machine 1',
-      'Login',
-      'state_machine',
-      'SM',
-      'StateMachine',
-    ];
-
-    StateMachineController? controller;
-    for (var name in possibleNames) {
-      controller = StateMachineController.fromArtboard(artboard, name);
-      if (controller != null) {
-        break;
-      }
-    }
-
-    if (controller != null) {
-      artboard.addController(controller);
-      _controller = controller;
-      _findInputs(controller);
-    }
-  }
-
-  void _findInputs(StateMachineController controller) {
-    _isChecking = controller.findInput<bool>('isFocus');
-    _isHandsUp = controller.findInput<bool>('IsPassword');
-    _numLook = controller.findInput<double>('eye_track');
-
-    var successInput = controller.findInput<bool>('login_success');
-    if (successInput != null && successInput is SMITrigger) {
-      _trigSuccess = successInput;
-    }
-
-    var failInput = controller.findInput<bool>('login_fail');
-    if (failInput != null && failInput is SMITrigger) {
-      _trigFail = failInput;
-    }
-  }
-
   @override
   void dispose() {
-    _usernameFocusNode.dispose();
-    _emailFocusNode.dispose();
-    _passwordFocusNode.dispose();
     username.dispose();
     email.dispose();
     password.dispose();
@@ -136,133 +32,193 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final auth = Provider.of<AuthViewModel>(context);
-    final screenHeight = MediaQuery.of(context).size.height;
+    Color c = Colors.white;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A), // Dark LeetCode background
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
-            child: Column(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final screenHeight = constraints.maxHeight;
+            final screenWidth = constraints.maxWidth;
+
+            return Column(
               children: [
-                SizedBox(height: screenHeight * 0.06),
-
-                const Text(
-                  "Create Account",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFFFFA116), // LeetCode orange
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Join the coding community",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    color: Color(0xFFB3B3B3), // Light gray for subtitles
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Cat Animation
-                SizedBox(
-                  height: 150,
-                  width: double.infinity,
-                  child: RiveAnimation.asset(
-                    'assets/a.riv',
-                    fit: BoxFit.contain,
-                    onInit: _onRiveInit,
-                  ),
-                ),
-
-                _buildTextField(
-                  controller: username,
-                  focusNode: _usernameFocusNode,
-                  hint: "Username",
-                  icon: Icons.person_outline,
-                  isPassword: false,
-                ),
-
-                const SizedBox(height: 20),
-
-                _buildTextField(
-                  controller: email,
-                  focusNode: _emailFocusNode,
-                  hint: "Email",
-                  icon: Icons.email_outlined,
-                  isPassword: false,
-                ),
-
-                const SizedBox(height: 20),
-
-                _buildTextField(
-                  controller: password,
-                  focusNode: _passwordFocusNode,
-                  hint: "Password",
-                  icon: Icons.lock_outline,
-                  isPassword: true,
-                ),
-
-                const SizedBox(height: 20),
-
-                // College Autocomplete Field
-                Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2D2D2D),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: const Color(0xFF3D3D3D),
-                      width: 1,
+                // Stripe 1: Header - Orange
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    width: double.infinity,
+                    color: const Color(0xFFFF6B3D),
+                    padding: EdgeInsets.symmetric(
+                      vertical: screenHeight * 0.024,
+                      horizontal: screenWidth * 0.08,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: AutoCompleteField(con: clgname),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Register Button
-                auth.isLoading
-                    ? Container(
-                        height: 56,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFFFFA116), // LeetCode orange
-                              Color(0xFFFF6B6B), // Complementary red-pink
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: AnimatedTextKit(
+                            repeatForever: true,
+                            pause: const Duration(milliseconds: 80),
+                            animatedTexts: [
+                              TypewriterAnimatedText(
+                                "Create Account",
+                                textStyle: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: screenWidth * 0.12,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -2,
+                                ),
+                                speed: const Duration(milliseconds: 180),
+                              ),
+                              TypewriterAnimatedText(
+                                "Collaborate",
+                                textStyle: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: screenWidth * 0.12,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -2,
+                                ),
+                                speed: const Duration(milliseconds: 180),
+                              ),
+                              TypewriterAnimatedText(
+                                'Achieve More',
+                                textStyle: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: screenWidth * 0.12,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -2,
+                                ),
+                                speed: const Duration(milliseconds: 180),
+                              ),
+                              TypewriterAnimatedText(
+                                'Grow Together',
+                                textStyle: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: screenWidth * 0.12,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -2,
+                                ),
+                                speed: const Duration(milliseconds: 180),
+                              ),
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF1A1A1A),
-                            strokeWidth: 3,
+                        SizedBox(height: screenHeight * 0.001),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Join the coding community',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: screenWidth * 0.034,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      )
-                    : Material(
-                        elevation: 8,
-                        borderRadius: BorderRadius.circular(16),
-                        shadowColor: const Color(0xFFFFA116).withOpacity(0.3),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(16),
-                          onTap: () async {
-                            _usernameFocusNode.unfocus();
-                            _emailFocusNode.unfocus();
-                            _passwordFocusNode.unfocus();
+                      ],
+                    ),
+                  ),
+                ),
 
+                // Stripe 2: Username Field - White
+                Expanded(
+                  flex: 2,
+                  child: _buildInputStripe(
+                    color: Colors.white,
+                    icon: Icons.person_outline,
+                    label: "USERNAME",
+                    child: TextField(
+                      controller: username,
+                      keyboardType: TextInputType.name,
+                      style: _fieldStyle(screenWidth),
+                      decoration: _fieldDecoration("your_username"),
+                    ),
+                  ),
+                ),
+
+                // Stripe 3: Email Field - Yellow
+                Expanded(
+                  flex: 2,
+                  child: _buildInputStripe(
+                    color: const Color(0xFFFFB84D),
+                    icon: Icons.email_outlined,
+                    label: "EMAIL",
+                    child: TextField(
+                      controller: email,
+                      keyboardType: TextInputType.emailAddress,
+                      style: _fieldStyle(screenWidth),
+                      decoration: _fieldDecoration("your.email@example.com"),
+                    ),
+                  ),
+                ),
+
+                // Stripe 4: Password Field - Red
+                Expanded(
+                  flex: 2,
+                  child: _buildInputStripe(
+                    color: const Color(0xFFE84855),
+                    icon: Icons.lock_outline,
+                    label: "PASSWORD",
+                    child: TextField(
+                      controller: password,
+                      obscureText: true,
+                      style: _fieldStyle(screenWidth),
+                      decoration: _fieldDecoration("••••••••"),
+                    ),
+                  ),
+                ),
+
+                // Stripe 5: College Field - Pink
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    width: double.infinity,
+                    color: const Color(0xFFE94196),
+                    padding: EdgeInsets.symmetric(
+                      vertical: screenHeight * 0.02,
+                      horizontal: screenWidth * 0.08,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.school_outlined, size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              'COLLEGE',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: screenHeight * 0.015),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.black, width: 2.2),
+                            color: Colors.white,
+                          ),
+                          child: AutoCompleteField(con: clgname),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Stripe 6: Register Button - Black
+                Expanded(
+                  flex: 2,
+                  child: GestureDetector(
+                    onTap: auth.isLoading
+                        ? null
+                        : () async {
                             try {
                               await http.get(
                                 Uri.parse(
@@ -277,177 +233,227 @@ class _RegisterPageState extends State<RegisterPage> {
                                 clgname.text,
                               );
 
-                              if (_trigSuccess != null) {
-                                _trigSuccess!.fire();
-                              }
-
-                              await Future.delayed(
-                                const Duration(milliseconds: 1500),
-                              );
-
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text("Registration successful!"),
-                                    backgroundColor: Color(
-                                      0xFF00C853,
-                                    ), // Success green
+                                    backgroundColor: Color(0xFF6BCF7F),
                                   ),
                                 );
                                 Navigator.pop(context);
                               }
                             } catch (e) {
-                              if (_trigFail != null) {
-                                _trigFail!.fire();
-                              }
-
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(e.toString()),
-                                    backgroundColor: const Color(
-                                      0xFFFF6B6B,
-                                    ), // Error red-pink
+                                    backgroundColor: const Color(0xFFE84855),
                                   ),
                                 );
                               }
                             }
                           },
-                          child: Container(
-                            height: 56,
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [
-                                  Color(0xFFFFA116), // LeetCode orange
-                                  Color(0xFFFF6B6B), // Complementary red-pink
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const Center(
-                              child: Text(
-                                "Create Account",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(
-                                    0xFF1A1A1A,
-                                  ), // Dark text on bright button
-                                  letterSpacing: 0.5,
+                    child: GestureDetector(
+                      onTap: auth.isLoading
+                          ? null
+                          : () async {
+                              try {
+                                await auth.register(
+                                  username.text.trim(),
+                                  email.text.trim(),
+                                  password.text.trim(),
+                                  clgname.text,
+                                );
+                                if (auth.token != null && context.mounted) {
+                                  setState(() {
+                                    c = Colors.green;
+                                  });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        "Registeration Succesful !",
+                                      ),
+                                      backgroundColor: Colors.green,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          Homescreen(name: username.text),
+                                    ),
+                                  );
+                                } else if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("Something went wrong."),
+                                      backgroundColor: Color(0xFFE84855),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Error: ${e.toString()}"),
+                                      backgroundColor: const Color(0xFFE84855),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                      child: Container(
+                        width: double.infinity,
+                        color: Colors.black,
+                        child: Center(
+                          child: auth.isLoading
+                              ? SizedBox(
+                                  width: screenWidth * 0.07,
+                                  height: screenWidth * 0.07,
+                                  child: const CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 4,
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'CREATE ACCOUNT',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: screenWidth * 0.045,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.5,
+                                      ),
+                                    ),
+                                    SizedBox(width: screenWidth * 0.03),
+                                    Icon(
+                                      Icons.arrow_forward,
+                                      color: Colors.white,
+                                      size: screenWidth * 0.07,
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                const SizedBox(height: 30),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Already have an account? ",
-                      style: TextStyle(
-                        color: Color(0xFFB3B3B3), // Light gray
-                        fontSize: 14,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(0, 0),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text(
-                        "Sign In",
-                        style: TextStyle(
-                          color: Color(0xFFFFA116), // LeetCode orange
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
 
-                const SizedBox(height: 20),
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    width: double.infinity,
+                    color: const Color(0xFFCCCCCC),
+                    child: Center(
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginPage(),
+                            ),
+                          );
+                        },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: screenWidth * 0.03,
+                            vertical: screenHeight * 0.005,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Already have an account? Sign In',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: screenWidth * 0.035,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.arrow_outward,
+                              color: Colors.black,
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required FocusNode focusNode,
-    required String hint,
+  Widget _buildInputStripe({
+    required Color color,
     required IconData icon,
-    required bool isPassword,
+    required String label,
+    required Widget child,
   }) {
     return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF2D2D2D), // Dark card background
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF3D3D3D), // Subtle border
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+      width: double.infinity,
+      color: color,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black, width: 2.2),
+              color: Colors.white,
+            ),
+            child: child,
           ),
         ],
       ),
-      child: TextField(
-        controller: controller,
-        focusNode: focusNode,
-        obscureText: isPassword,
-        keyboardType: isPassword
-            ? TextInputType.text
-            : TextInputType.emailAddress,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-          color: Color(0xFFEFEFEF),
-        ),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(
-            color: Color(0xFF6B6B6B),
-            fontWeight: FontWeight.w400,
-          ),
-          prefixIcon: Icon(icon, color: const Color(0xFFFFA116), size: 22),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(
-              color: Color(0xFFFFA116),
-              width: 2,
-            ), // LeetCode orange focus
-          ),
-          filled: true,
-          fillColor: const Color(0xFF2D2D2D),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 18,
-          ),
-        ),
+    );
+  }
+
+  InputDecoration _fieldDecoration(String hint) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(
+        color: Color(0xFFCCCCCC),
+        fontWeight: FontWeight.w500,
       ),
+      border: InputBorder.none,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+    );
+  }
+
+  TextStyle _fieldStyle(double screenWidth) {
+    return TextStyle(
+      fontSize: screenWidth * 0.04,
+      fontWeight: FontWeight.w600,
+      color: Colors.black,
     );
   }
 }

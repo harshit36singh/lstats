@@ -91,37 +91,7 @@ class _LeaderboardState extends State<Leaderboard> {
     }
   }
 
-  Future<void> _refreshData() async {
-    try {
-      await http.post(
-        Uri.parse(
-          'https://lstatsbackend-production.up.railway.app/leaderboard/refresh',
-        ),
-      );
-      await fetchLeaderboard();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Leaderboard refreshed!'),
-            duration: Duration(seconds: 2),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      print('Error refreshing: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to refresh'),
-            duration: Duration(seconds: 2),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
+  
 
   void _filter(String query) {
     setState(() {
@@ -137,282 +107,442 @@ class _LeaderboardState extends State<Leaderboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: Colors.black,
       body: Column(
         children: [
-         Padding(
-  padding: const EdgeInsets.all(16),
-  child: Expanded(
-    child: TextField(
-      onChanged: _filter,
-      decoration: InputDecoration(
-        hintText: 'Search user...',
-        hintStyle: const TextStyle(color: Colors.black45),
-        prefixIcon: const Icon(Icons.search, color: Colors.black54),
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-         
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-        ),
-        enabledBorder: OutlineInputBorder(
-         
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
-        ),
-        focusedBorder: OutlineInputBorder(
-         
-          borderSide: const BorderSide(color: Colors.black87, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
-      ),
-    ),
-  ),
-),
+          Container(
+            width: double.infinity,
+            color: const Color(0xFFFF6B3D),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Column(
+              children: [
+               
+               
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black, width: 2.5),
+                    color: Colors.white,
+                  ),
+                  child: TextField(
+                    onChanged: _filter,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: 'Search players...',
+                      hintStyle: TextStyle(
+                        color: Color(0xFFCCCCCC),
+                        fontWeight: FontWeight.w600,
+                      ),
+                      prefixIcon: Icon(Icons.search, color: Colors.black),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Content
           Expanded(
             child: isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(color: Colors.black87),
+                    child: CircularProgressIndicator(
+                      color: Color(0xFFFF6B3D),
+                      strokeWidth: 4,
+                    ),
                   )
                 : filtered.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off_rounded,
-                          size: 64,
-                          color: Colors.grey.shade400,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          searchQuery.isEmpty
-                              ? 'No data found'
-                              : 'No users found for "$searchQuery"',
-                          style: const TextStyle(
-                            color: Colors.black54,
-                            fontSize: 16,
+                    ? Container(
+                        color: Colors.white,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.search_off_rounded,
+                                size: 80,
+                                color: Color(0xFFCCCCCC),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                searchQuery.isEmpty
+                                    ? 'NO DATA FOUND'
+                                    : 'NO USERS FOUND',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  )
-                : SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        if (searchQuery.isEmpty && filtered.length >= 3)
-                          _buildPodium(),
-                        _buildLeaderboardList(),
-                      ],
-                    ),
-                  ),
+                      )
+                    : SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            if (searchQuery.isEmpty && filtered.length >= 3)
+                              _buildPodium(),
+                            _buildLeaderboardList(),
+                          ],
+                        ),
+                      ),
           ),
         ],
       ),
     );
   }
 
-Widget _buildPodium() {
-  final first = filtered.isNotEmpty ? filtered[0] : null;
-  final second = filtered.length > 1 ? filtered[1] : null;
-  final third = filtered.length > 2 ? filtered[2] : null;
+  Widget _buildPodium() {
+    final first = filtered.isNotEmpty ? filtered[0] : null;
+    final second = filtered.length > 1 ? filtered[1] : null;
+    final third = filtered.length > 2 ? filtered[2] : null;
 
-  TextStyle rankStyle = const TextStyle(
-    fontSize: 72,
-    fontWeight: FontWeight.w900,
-    color: Colors.black,
-    letterSpacing: -2,
-  );
-
-  TextStyle nameStyle = const TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.w800,
-    color: Colors.black,
-  );
-
-  TextStyle pointsStyle = const TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-    color: Colors.black,
-  );
-
-  return Column(
-    children: [
-      if (first != null)
-        Container(
-          width: double.infinity,
-          color: const Color(0xFFE6542B),
-          padding: const EdgeInsets.symmetric(vertical: 30),
-          child: Column(
-            children: [
-              Text("1", style: rankStyle),
-              const SizedBox(height: 4),
-              CircleAvatar(
-                radius: 45,
-                backgroundImage: NetworkImage(
-                  first['avatar'] ?? 'https://via.placeholder.com/150',
-                ),
-                backgroundColor: Colors.white,
-              ),
-              const SizedBox(height: 10),
-              Text(first['username'] ?? 'Unknown', style: nameStyle),
-              Text("${first['points']} pts", style: pointsStyle),
-            ],
-          ),
-        ),
-      Row(
-        children: [
-          if (second != null)
-            Expanded(
-              child: Container(
-                color: const Color(0xFF03A9F4),
-                padding: const EdgeInsets.symmetric(vertical: 25),
-                child: Column(
-                  children: [
-                    Text("2", style: rankStyle.copyWith(fontSize: 60)),
-                    const SizedBox(height: 4),
-                    CircleAvatar(
-                      radius: 35,
-                      backgroundImage: NetworkImage(
-                        second['avatar'] ??
-                            'https://via.placeholder.com/150',
+    return Column(
+      children: [
+        // First Place - Full width
+        if (first != null)
+          Container(
+            width: double.infinity,
+            color: const Color(0xFFFFD700),
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+            child: Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Text(
+                      '1',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFFFFD700),
                       ),
-                      backgroundColor: Colors.white,
                     ),
-                    const SizedBox(height: 8),
-                    Text(second['username'] ?? 'Unknown', style: nameStyle),
-                    Text("${second['points']} pts", style: pointsStyle),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          if (third != null)
-            Expanded(
-              child: Container(
-                color: const Color(0xFFFFC107),
-                padding: const EdgeInsets.symmetric(vertical: 25),
-                child: Column(
-                  children: [
-                    Text("3", style: rankStyle.copyWith(fontSize: 60)),
-                    const SizedBox(height: 4),
-                    CircleAvatar(
-                      radius: 35,
-                      backgroundImage: NetworkImage(
-                        third['avatar'] ??
-                            'https://via.placeholder.com/150',
+                const SizedBox(width: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black, width: 3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: CircleAvatar(
+                    radius: 42,
+                    backgroundImage: NetworkImage(
+                      first['avatar'] ?? 'https://via.placeholder.com/150',
+                    ),
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        first['username'] ?? 'Unknown',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                          letterSpacing: -0.5,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      backgroundColor: Colors.white,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(third['username'] ?? 'Unknown', style: nameStyle),
-                    Text("${third['points']} pts", style: pointsStyle),
-                  ],
+                      const SizedBox(height: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${first['points']} POINTS',
+                          style: const TextStyle(
+                            color: Color(0xFFFFD700),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
-        ],
-      ),
-    ],
-  );
-}
-
-
- Widget _buildLeaderboardList() {
-  final startIndex = searchQuery.isEmpty && filtered.length > 3 ? 3 : 0;
-  final displayUsers = filtered.length > startIndex
-      ? filtered.sublist(startIndex)
-      : [];
-
-  if (displayUsers.isEmpty) return const SizedBox.shrink();
-
-  // A set of nice, solid accent colors
-  final List<Color> solidColors = [
-  const Color(0xFFDFAF00), // Muted Amber
-  const Color(0xFF64B5F6), // Soft Blue
-  const Color(0xFF81C784), // Soft Green
-  const Color(0xFFFF8A65), // Muted Orange
-  const Color(0xFF9575CD), // Soft Purple
-  const Color(0xFFF48FB1), // Soft Pink
-  const Color(0xFF4DD0E1), // Muted Cyan
-  const Color(0xFF66BB6A), // Muted Green
-  const Color(0xFFFFB74D), // Soft Orange
-  const Color(0xFF42A5F5), // Soft Blue
-];
-
-
-  return ListView.builder(
-    physics: const NeverScrollableScrollPhysics(),
-    shrinkWrap: true,
-    padding: EdgeInsets.zero,
-    itemCount: displayUsers.length,
-    itemBuilder: (context, index) {
-      final user = displayUsers[index];
-      final rank = startIndex + index + 1;
-      final color = solidColors[index % solidColors.length]; // cycle colors
-
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: color,
-          // No margin, no border radius → seamless stacked blocks
-        ),
-        child: Row(
-          children: [
-            Text(
-              '$rank',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(width: 14),
-            CircleAvatar(
-              radius: 20,
-              backgroundImage: NetworkImage(
-                user['avatar'] ?? 'https://via.placeholder.com/150',
-              ),
-              backgroundColor: Colors.white,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                user['username'] ?? 'Unknown',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+                const Icon(
+                  Icons.emoji_events,
+                  size: 48,
                   color: Colors.black,
                 ),
-                overflow: TextOverflow.ellipsis,
-              ),
+              ],
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 5,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.8),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                "${user['points']} pts",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
+          ),
+
+        // Second and Third Place
+        Row(
+          children: [
+            // Second Place
+            if (second != null)
+              Expanded(
+                child: Container(
+                  color: const Color(0xFFC0C0C0),
+                  padding: const EdgeInsets.symmetric(vertical: 28),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: const BoxDecoration(
+                          color: Colors.black,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Center(
+                          child: Text(
+                            '2',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFFC0C0C0),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black, width: 2.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: CircleAvatar(
+                          radius: 35,
+                          backgroundImage: NetworkImage(
+                            second['avatar'] ?? 'https://via.placeholder.com/150',
+                          ),
+                          backgroundColor: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          second['username'] ?? 'Unknown',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${second['points']} pts',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+
+            // Third Place
+            if (third != null)
+              Expanded(
+                child: Container(
+                  color: const Color(0xFFCD7F32),
+                  padding: const EdgeInsets.symmetric(vertical: 28),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: const BoxDecoration(
+                          color: Colors.black,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Center(
+                          child: Text(
+                            '3',
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFFCD7F32),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black, width: 2.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: CircleAvatar(
+                          radius: 35,
+                          backgroundImage: NetworkImage(
+                            third['avatar'] ?? 'https://via.placeholder.com/150',
+                          ),
+                          backgroundColor: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Text(
+                          third['username'] ?? 'Unknown',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.black,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${third['points']} pts',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
-      );
-    },
-  );
-}
+      ],
+    );
+  }
+
+  Widget _buildLeaderboardList() {
+    final startIndex = searchQuery.isEmpty && filtered.length > 3 ? 3 : 0;
+    final displayUsers = filtered.length > startIndex
+        ? filtered.sublist(startIndex)
+        : [];
+
+    if (displayUsers.isEmpty) return const SizedBox.shrink();
+
+    final List<Color> stripeColors = [
+      const Color(0xFFFF6B3D),
+      Colors.white,
+      const Color(0xFFFFB84D),
+      const Color(0xFFE84855),
+      const Color(0xFFE94196),
+      const Color(0xFF6BCF7F),
+    ];
+
+    return ListView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: EdgeInsets.zero,
+      itemCount: displayUsers.length,
+      itemBuilder: (context, index) {
+        final user = displayUsers[index];
+        final rank = startIndex + index + 1;
+        final color = stripeColors[index % stripeColors.length];
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: BoxDecoration(
+            color: color,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    '$rank',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black, width: 2.2),
+                  shape: BoxShape.circle,
+                ),
+                child: CircleAvatar(
+                  radius: 22,
+                  backgroundImage: NetworkImage(
+                    user['avatar'] ?? 'https://via.placeholder.com/150',
+                  ),
+                  backgroundColor: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  user['username'] ?? 'Unknown',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  "${user['points']} pts",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   void _showProfileDialog(user) {
     showDialog(
@@ -420,90 +550,11 @@ Widget _buildPodium() {
       builder: (context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadiusGeometry.circular(10),
+            borderRadius: BorderRadius.circular(10),
           ),
-
           child: Container(),
         );
       },
     );
   }
-}
-
-class HexagonPodiumPainter extends CustomPainter {
-  final Color color;
-  final int position;
-
-  HexagonPodiumPainter({required this.color, required this.position});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [color.withOpacity(0.9), color.withOpacity(0.6)],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..style = PaintingStyle.fill;
-
-    final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.15)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-
-    final path = Path();
-    final shadowPath = Path();
-
-    final topWidth = size.width * 0.85;
-    final bottomWidth = size.width;
-    final centerX = size.width / 2;
-
-    shadowPath.moveTo(centerX - bottomWidth / 2 + 4, size.height + 4);
-    shadowPath.lineTo(centerX - topWidth / 2 + 4, 4);
-    shadowPath.lineTo(centerX + topWidth / 2 + 4, 4);
-    shadowPath.lineTo(centerX + bottomWidth / 2 + 4, size.height + 4);
-    shadowPath.close();
-
-    path.moveTo(centerX - bottomWidth / 2, size.height);
-    path.lineTo(centerX - topWidth / 2, 0);
-    path.lineTo(centerX + topWidth / 2, 0);
-    path.lineTo(centerX + bottomWidth / 2, size.height);
-    path.close();
-
-    canvas.drawPath(shadowPath, shadowPaint);
-    canvas.drawPath(path, paint);
-
-    final textPainter = TextPainter(
-      text: TextSpan(
-        text: '$position',
-        style: TextStyle(
-          fontSize: 52,
-          fontWeight: FontWeight.w900,
-          color: Colors.white.withOpacity(0.25),
-        ),
-      ),
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset(
-        centerX - textPainter.width / 2,
-        size.height / 2 - textPainter.height / 2 - 10,
-      ),
-    );
-
-    final highlightPaint = Paint()
-      ..color = Colors.white.withOpacity(0.3)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
-    final highlightPath = Path();
-    highlightPath.moveTo(centerX - topWidth / 2, 0);
-    highlightPath.lineTo(centerX + topWidth / 2, 0);
-
-    canvas.drawPath(highlightPath, highlightPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

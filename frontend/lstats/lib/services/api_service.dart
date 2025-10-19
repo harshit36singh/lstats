@@ -36,7 +36,7 @@ class ApiService {
       throw Exception("Login error: $e");
     }
   }
-  static Future<void> register(
+  static Future<String> register(
       String username, String email, String password,String collegename) async {
     final response = await http.post(
       Uri.parse("$baseurl/auth/register"),
@@ -44,10 +44,10 @@ class ApiService {
       body: jsonEncode(
           {"username": username, "email": email, "password": password,"collegename":collegename}),
     );
-
     if (response.statusCode != 200) {
       throw Exception("Registration failed: ${response.body}");
     }
+    return "done";
   }
    }
 

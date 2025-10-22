@@ -1,9 +1,11 @@
 package com.example.lstats.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.example.lstats.auth.dto.GroupDTO;
 import com.example.lstats.model.Group;
 import com.example.lstats.model.GroupInvite;
 import com.example.lstats.model.User;
@@ -37,11 +39,16 @@ public class GroupService {
 
     }
 
-    public List<Group> getusergroups(String name){
-        User user=userrepo.findByUsername(name).orElseThrow(()->new RuntimeException("Cant find this user"));
-        return grouprep.findByMembersContains(user);
+    public List<GroupDTO> getusergroups(String name) {
+    User user = userrepo.findByUsername(name)
+            .orElseThrow(() -> new RuntimeException("Cant find this user"));
 
-    }
+    List<Group> groups = grouprep.findByMembersContains(user);
+    return groups.stream()
+            .map(GroupDTO::fromEntity)
+            .collect(Collectors.toList());
+}
+
 
     public GroupInvite sendInvite(Long groupid,String senderid,String receiverid){
         Group group=grouprep.findById(groupid).orElseThrow(()->new RuntimeException("Cant find the group"));
@@ -61,7 +68,7 @@ public class GroupService {
         invite.setStatus(GroupInvite.InviteStatus.ACCEPTED);
         inviterepo.save(invite);
 
-        Group group=new Group();
+        Group group=invite.getGroup();
         group.getMembers().add(invite.getReceiver());
         grouprep.save(group);
     }
@@ -69,6 +76,6 @@ public class GroupService {
 
     public List<GroupInvite> getpendinginvites(String name){
         User user=userrepo.findByUsername(name).orElseThrow(()->new RuntimeException("Cant find user"));
-        return inviterepo.findByReceiverandSender(user, GroupInvite.InviteStatus.PENDING);
+        return inviterepo.findByReceiverAndStatus(user, GroupInvite.InviteStatus.PENDING);
     }
 }

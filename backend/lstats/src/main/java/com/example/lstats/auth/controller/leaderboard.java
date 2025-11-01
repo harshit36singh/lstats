@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,13 +28,14 @@ class Leader {
     Leader(int e, int m, int h, String img, String clgname) {
         this.e = e;
         this.m = m;
+        
         this.h = h;
         this.img = img;
         this.clgname = clgname;
     }
 
     int getpoints() {
-        return e * 1 + m * 3 + h * 5;
+        return e * 3 + m * 4 + h * 5;
     }
 
     int gettotalsolved() {
@@ -55,6 +55,7 @@ public class leaderboard {
 
     @Scheduled(fixedRate = 3600000) void refreshleaderboard() {
         List<User> users = userRepository.findAll();
+
         for (User user : users) {
             try {
                 String url = "https://lstats.onrender.com/leetcode/" + user.getUsername();

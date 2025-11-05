@@ -15,7 +15,7 @@ class _FriendsPageState extends State<FriendsPage> {
   List<dynamic> friendreq = [];
   List<dynamic> friends = [];
   bool isLoading = true;
-  final String baseUrl = "https://lstatsbackend-production.up.railway.app";
+  final String baseUrl = "https://lstats-railway-backend-production.up.railway.app";
   final TextEditingController _searchController = TextEditingController();
 
   @override

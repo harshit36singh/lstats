@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:lstats/views/auth/pages/loadingindicator.dart';
 
 class CollegeLeaderboard extends StatefulWidget {
   const CollegeLeaderboard({super.key});
@@ -20,7 +21,7 @@ class _CollegeLeaderboardState extends State<CollegeLeaderboard> {
   }
 
   Future<void> fetchColleges() async {
-    final url = 'https://lstatsbackend-production.up.railway.app/leaderboard/colleges';
+    final url = 'https://lstats-railway-backend-production.up.railway.app/leaderboard/colleges';
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -312,15 +313,7 @@ class _CollegeDetailPageState extends State<CollegeDetailPage> {
           // Content
           Expanded(
             child: isLoading
-                ? Container(
-                    color: Colors.white,
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFFFF6B3D),
-                        strokeWidth: 4,
-                      ),
-                    ),
-                  )
+                ? BrutalistLoadingIndicator()
                 : students.isEmpty
                     ? Container(
                         color: Colors.white,

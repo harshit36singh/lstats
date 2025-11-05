@@ -45,6 +45,8 @@ dependencies:
   animated_text_kit: ^4.3.0
   flutter_html: ^3.0.0
   url_launcher: ^6.3.2
+  home_widget: ^0.8.1
+  flutter_local_notifications: ^19.5.0
 
 
 dev_dependencies:
@@ -58,6 +60,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.7
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -65,14 +68,43 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - assets/a.riv
+    - assets/lim.png
   uses-material-design: true
+
+# flutter_native_splash configuration
+# Place this file in your project root as flutter_native_splash.yaml
+flutter_native_splash:
+  # Match this color to your Flutter SplashScreen background
+  color: "#000000"  # keep black if your Flutter splash is black
+  image: null        # no image, so your Flutter splash animation shows immediately
+
+  # Android 12+ specific settings
+  android_12:
+    color: "#000000"
+    image: null
+
+  # Platform targets
+  ios: true
+  android: true
+  web: false
+
+  # Fullscreen mode
+  fullscreen: true
+
+  # Gravity / content mode
+  android_gravity: center
+  ios_content_mode: center
+
+
+# After creating this file, run:
+# flutter pub add flutter_native_splash --dev
+# flutter pub run flutter_native_splash:create
 
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/lim.jpg"
+  image_path: "assets/lim.png"
 
   # To add assets to your application, add an assets section, like this:
   # assets:

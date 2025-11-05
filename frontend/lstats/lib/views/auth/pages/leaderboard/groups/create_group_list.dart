@@ -6,6 +6,7 @@ class CreateGroupPage extends StatefulWidget {
   @override
   State<CreateGroupPage> createState() => _CreateGroupPageState();
 }
+//https://chatgpt.com/c/690833cf-b8ec-8320-aeb7-ace47b3ced74
 
 class _CreateGroupPageState extends State<CreateGroupPage> {
   final TextEditingController name=TextEditingController();

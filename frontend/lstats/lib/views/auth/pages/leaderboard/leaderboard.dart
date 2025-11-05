@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
 import 'package:lstats/services/api_service.dart';
+import 'package:lstats/views/auth/pages/loadingindicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Leaderboard extends StatefulWidget {
@@ -39,7 +40,7 @@ class _LeaderboardState extends State<Leaderboard> {
     try {
       final response = await http.get(
         Uri.parse(
-          'https://lstatsbackend-production.up.railway.app/leaderboard/global',
+          'https://lstats-railway-backend-production.up.railway.app/leaderboard/global',
         ),
       );
 
@@ -64,34 +65,68 @@ class _LeaderboardState extends State<Leaderboard> {
     if (currentuserid == null) return;
 
     final url = Uri.parse(
-      'https://lstatsbackend-production.up.railway.app/friends/send?senderid=$currentuserid&receiverid=$receiverId',
+      'https://lstats-railway-backend-production.up.railway.app/friends/send?senderid=$currentuserid&receiverid=$receiverId',
     );
 
     try {
       final response = await http.post(url);
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Friend request sent!"),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text(
+              "FRIEND REQUEST SENT!",
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+              ),
+            ),
+            backgroundColor: const Color(0xFF00E676),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              side: const BorderSide(color: Colors.black, width: 3),
+              borderRadius: BorderRadius.zero,
+            ),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Failed: ${response.body}"),
-            backgroundColor: Colors.red,
+            content: Text(
+              "FAILED: ${response.body}",
+              style: const TextStyle(
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+              ),
+            ),
+            backgroundColor: const Color(0xFFFF3366),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              side: const BorderSide(color: Colors.black, width: 3),
+              borderRadius: BorderRadius.zero,
+            ),
           ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text(
+            "ERROR: $e",
+            style: const TextStyle(
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1,
+            ),
+          ),
+          backgroundColor: const Color(0xFFFF3366),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(color: Colors.black, width: 3),
+            borderRadius: BorderRadius.zero,
+          ),
+        ),
       );
     }
   }
-
-  
 
   void _filter(String query) {
     setState(() {
@@ -107,93 +142,107 @@ class _LeaderboardState extends State<Leaderboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFFF8F9FA),
       body: Column(
         children: [
+          // Search Header
           Container(
             width: double.infinity,
-            color: const Color(0xFFFF6B3D),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            child: Column(
-              children: [
-               
-               
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black, width: 2.5),
-                    color: Colors.white,
+            decoration: const BoxDecoration(
+              color: Colors.amber,
+              border: Border(
+                bottom: BorderSide(color: Colors.black, width: 4),
+              ),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black, width: 3),
+                color: Colors.white,
+              ),
+              child: TextField(
+                onChanged: _filter,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
+                ),
+                decoration: const InputDecoration(
+                  hintText: 'SEARCH PLAYERS...',
+                  hintStyle: TextStyle(
+                    color: Color(0xFFCCCCCC),
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1,
                   ),
-                  child: TextField(
-                    onChanged: _filter,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black,
-                    ),
-                    decoration: const InputDecoration(
-                      hintText: 'Search players...',
-                      hintStyle: TextStyle(
-                        color: Color(0xFFCCCCCC),
-                        fontWeight: FontWeight.w600,
-                      ),
-                      prefixIcon: Icon(Icons.search, color: Colors.black),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                    ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Colors.black,
+                    size: 22,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
                   ),
                 ),
-              ],
+              ),
             ),
           ),
-
-          // Content
           Expanded(
             child: isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFFF6B3D),
-                      strokeWidth: 4,
-                    ),
-                  )
+                ? BrutalistLoadingIndicator()
                 : filtered.isEmpty
-                    ? Container(
-                        color: Colors.white,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(32),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF3366),
+                                border: Border.all(color: Colors.black, width: 4),
+                              ),
+                              child: const Icon(
                                 Icons.search_off_rounded,
                                 size: 80,
-                                color: Color(0xFFCCCCCC),
+                                color: Colors.white,
                               ),
-                              const SizedBox(height: 16),
-                              Text(
+                            ),
+                            const SizedBox(height: 20),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              decoration: const BoxDecoration(
+                                color: Colors.black,
+                              ),
+                              child: Text(
                                 searchQuery.isEmpty
                                     ? 'NO DATA FOUND'
                                     : 'NO USERS FOUND',
                                 style: const TextStyle(
-                                  color: Colors.black,
+                                  color: Colors.white,
                                   fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 1,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 2,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            if (searchQuery.isEmpty && filtered.length >= 3)
-                              _buildPodium(),
-                            _buildLeaderboardList(),
+                            ),
                           ],
                         ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(12),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final user = filtered[index];
+                          final rank = user['rank'] ?? (index + 1);
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildUserCard(user, rank, index),
+                          );
+                        },
                       ),
           ),
         ],
@@ -201,346 +250,144 @@ class _LeaderboardState extends State<Leaderboard> {
     );
   }
 
-  Widget _buildPodium() {
-    final first = filtered.isNotEmpty ? filtered[0] : null;
-    final second = filtered.length > 1 ? filtered[1] : null;
-    final third = filtered.length > 2 ? filtered[2] : null;
+  Widget _buildUserCard(dynamic user, int rank, int index) {
+    final List<Color> colors = [
+      const Color(0xFFFFD700), // Gold for top 1
+      const Color(0xFFC0C0C0), // Silver for top 2
+      const Color(0xFFCD7F32), // Bronze for top 3
+      const Color(0xFF00D4FF),
+      const Color(0xFFFF3366),
+      const Color(0xFFFFB84D),
+      const Color(0xFF6C5CE7),
+      const Color(0xFF00E676),
+      Colors.white,
+    ];
 
-    return Column(
-      children: [
-        // First Place - Full width
-        if (first != null)
+    final color = index < 3 ? colors[index] : colors[(index % (colors.length - 3)) + 3];
+
+    return Container(
+      height: 100,
+      decoration: BoxDecoration(
+        color: color,
+        border: Border.all(color: Colors.black, width: 3),
+      ),
+      child: Row(
+        children: [
+          // Rank Section
           Container(
-            width: double.infinity,
-            color: const Color(0xFFFFD700),
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      '1',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFFFFD700),
-                      ),
-                    ),
-                  ),
+            width: 70,
+            decoration: const BoxDecoration(
+              color: Colors.black,
+              border: Border(
+                right: BorderSide(color: Colors.black, width: 3),
+              ),
+            ),
+            child: Center(
+              child: Text(
+                '#$rank',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                  letterSpacing: -1,
                 ),
-                const SizedBox(width: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black, width: 3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: CircleAvatar(
-                    radius: 42,
-                    backgroundImage: NetworkImage(
-                      first['avatar'] ?? 'https://via.placeholder.com/150',
+              ),
+            ),
+          ),
+    
+          // Avatar Section
+          Container(
+            width: 70,
+            height: 70,
+            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black, width: 3),
+            ),
+            child: Image.network(
+              user['avatar'] ?? 'https://via.placeholder.com/150',
+              fit: BoxFit.cover,
+            ),
+          ),
+    
+          // Info Section
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    user['username'] ?? 'Unknown',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.black,
+                      letterSpacing: -0.5,
+                      height: 1.2,
                     ),
-                    backgroundColor: Colors.white,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 6),
+                  Row(
                     children: [
-                      Text(
-                        first['username'] ?? 'Unknown',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.black,
-                          letterSpacing: -0.5,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                          horizontal: 10,
+                          vertical: 4,
                         ),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.black,
-                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          '${first['points']} POINTS',
+                          '${user['points']} PTS',
                           style: const TextStyle(
-                            color: Color(0xFFFFD700),
-                            fontWeight: FontWeight.w800,
-                            fontSize: 14,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
                             letterSpacing: 0.5,
                           ),
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${user['solved']} solved',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87,
+                        ),
+                      ),
                     ],
                   ),
-                ),
-                const Icon(
-                  Icons.emoji_events,
-                  size: 48,
-                  color: Colors.black,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-
-        // Second and Third Place
-        Row(
-          children: [
-            // Second Place
-            if (second != null)
-              Expanded(
-                child: Container(
-                  color: const Color(0xFFC0C0C0),
-                  padding: const EdgeInsets.symmetric(vertical: 28),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: const BoxDecoration(
-                          color: Colors.black,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Center(
-                          child: Text(
-                            '2',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFFC0C0C0),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black, width: 2.5),
-                          shape: BoxShape.circle,
-                        ),
-                        child: CircleAvatar(
-                          radius: 35,
-                          backgroundImage: NetworkImage(
-                            second['avatar'] ?? 'https://via.placeholder.com/150',
-                          ),
-                          backgroundColor: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          second['username'] ?? 'Unknown',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.black,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${second['points']} pts',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
+    
+          // Action Button
+          Container(
+            width: 60,
+            decoration: const BoxDecoration(
+              color: Colors.black,
+              border: Border(
+                left: BorderSide(color: Colors.black, width: 3),
+              ),
+            ),
+            child: GestureDetector(
+               onTap: () => _showProfileDialog(user),
+              child: const Center(
+                child: Icon(
+                  Icons.more_vert,
+                  color: Colors.white,
+                  size: 32,
                 ),
               ),
-
-            // Third Place
-            if (third != null)
-              Expanded(
-                child: Container(
-                  color: const Color(0xFFCD7F32),
-                  padding: const EdgeInsets.symmetric(vertical: 28),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: const BoxDecoration(
-                          color: Colors.black,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Center(
-                          child: Text(
-                            '3',
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w900,
-                              color: Color(0xFFCD7F32),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black, width: 2.5),
-                          shape: BoxShape.circle,
-                        ),
-                        child: CircleAvatar(
-                          radius: 35,
-                          backgroundImage: NetworkImage(
-                            third['avatar'] ?? 'https://via.placeholder.com/150',
-                          ),
-                          backgroundColor: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text(
-                          third['username'] ?? 'Unknown',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.black,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${third['points']} pts',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLeaderboardList() {
-    final startIndex = searchQuery.isEmpty && filtered.length > 3 ? 3 : 0;
-    final displayUsers = filtered.length > startIndex
-        ? filtered.sublist(startIndex)
-        : [];
-
-    if (displayUsers.isEmpty) return const SizedBox.shrink();
-
-    final List<Color> stripeColors = [
-      const Color(0xFFFF6B3D),
-      Colors.white,
-      const Color(0xFFFFB84D),
-      const Color(0xFFE84855),
-      const Color(0xFFE94196),
-      const Color(0xFF6BCF7F),
-    ];
-
-    return ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      padding: EdgeInsets.zero,
-      itemCount: displayUsers.length,
-      itemBuilder: (context, index) {
-        final user = displayUsers[index];
-        final rank = startIndex + index + 1;
-        final color = stripeColors[index % stripeColors.length];
-
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          decoration: BoxDecoration(
-            color: color,
+            ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Center(
-                  child: Text(
-                    '$rank',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black, width: 2.2),
-                  shape: BoxShape.circle,
-                ),
-                child: CircleAvatar(
-                  radius: 22,
-                  backgroundImage: NetworkImage(
-                    user['avatar'] ?? 'https://via.placeholder.com/150',
-                  ),
-                  backgroundColor: Colors.white,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  user['username'] ?? 'Unknown',
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  "${user['points']} pts",
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -549,12 +396,213 @@ class _LeaderboardState extends State<Leaderboard> {
       context: context,
       builder: (context) {
         return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+          shape: const RoundedRectangleBorder(
+            side: BorderSide(color: Colors.black, width: 4),
+            borderRadius: BorderRadius.zero,
           ),
-          child: Container(),
+          child: Container(
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.black, width: 4),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Avatar
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black, width: 4),
+                  ),
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: NetworkImage(
+                          user['avatar'] ?? 'https://via.placeholder.com/150',
+                        ),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Username
+                Text(
+                  user['username'] ?? 'Unknown',
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.black,
+                    letterSpacing: -1,
+                    height: 1,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+
+                // Rank Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 10,
+                  ),
+                  decoration: const BoxDecoration(
+                    color: Colors.amber,
+                  ),
+                  child: Text(
+                    'RANK #${user['rank'] ?? 'N/A'}',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                      letterSpacing: 2,
+                      shadows: [
+                        Shadow(
+                          color: Colors.white,
+                          offset: Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Stats Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatBox(
+                        '${user['points'] ?? 0}',
+                        'POINTS',
+                        const Color(0xFFFFD700),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildStatBox(
+                        '${user['solved'] ?? 0}',
+                        'SOLVED',
+                        const Color(0xFF00E676),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          if (user['userid'] != null &&
+                              user['userid'] != currentuserid) {
+                            sendFriendRequest(user['userid']);
+                            Navigator.pop(context);
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            color: user['userid'] == currentuserid
+                                ? const Color(0xFFCCCCCC)
+                                : const Color(0xFFFF3366),
+                            border: Border.all(color: Colors.black, width: 3),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.person_add,
+                                color: Colors.black,
+                                size: 22,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                user['userid'] == currentuserid
+                                    ? 'YOU'
+                                    : 'ADD FRIEND',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 15,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(color: Colors.black, width: 3),
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.black,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         );
       },
+    );
+  }
+
+  Widget _buildStatBox(String value, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      decoration: BoxDecoration(
+        color: color,
+        border: Border.all(color: Colors.black, width: 3),
+      ),
+      child: Column(
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                color: Colors.black,
+                height: 1,
+                letterSpacing: -1,
+                shadows: [
+                  Shadow(
+                    color: Colors.white,
+                    offset: Offset(2, 2),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              color: Colors.black,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

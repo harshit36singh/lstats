@@ -16,7 +16,7 @@ class _AutoCompleteFieldState extends State<AutoCompleteField> {
 
   Future<List<String>> fetchclg(String query) async {
     final uri = Uri.parse(
-      "https://lstatsbackend-production.up.railway.app/auth/collges?query=$query",
+      "https://lstats-backend.onrender.com/auth/collges?query=$query",
     );
     final res = await http.get(uri);
     if (res.statusCode == 200) {
@@ -65,7 +65,7 @@ class _AutoCompleteFieldState extends State<AutoCompleteField> {
           ),
           decoration: InputDecoration(
             hintText: "College name or enter 'Other'",
-            prefixIcon: const Icon(Icons.school_outlined, color: Colors.black),
+           hintStyle: TextStyle(color: const Color(0xFFCCCCCC)),
             border: InputBorder.none,
             filled: true,
             fillColor: const Color.fromARGB(255, 254, 254, 254),

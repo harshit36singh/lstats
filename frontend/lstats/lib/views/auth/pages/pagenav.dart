@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:lstats/views/auth/pages/chat.dart';
+import 'package:lstats/views/auth/pages/clashpage.dart';
 import 'package:lstats/views/auth/pages/daily.dart';
 import 'package:lstats/views/auth/pages/friends.dart';
 import 'package:lstats/views/auth/pages/home.dart';
@@ -18,15 +18,13 @@ class _MainNavPageState extends State<MainNavPage> {
   int _selectedIndex = 0;
   late List<Widget> _pages;
 
-  final Color barColor = const Color.fromARGB(255, 229, 120, 89); // orange from your image
-
   @override
   void initState() {
     super.initState();
     _pages = [
       Homescreen(name: widget.uname),
       const DailyPage(),
-     const ChatPage(),
+      const LeetCodeClash(),
       const MainLeader(),
       const FriendsPage(),
     ];
@@ -45,38 +43,102 @@ class _MainNavPageState extends State<MainNavPage> {
 
   Widget _buildBottomNavBar() {
     return Container(
-      height: 70,
-      color: barColor,
+      height: 80,
+      decoration: const BoxDecoration(
+        color: Colors.black,
+        border: Border(
+          top: BorderSide(color: Color(0xFFFFD700), width: 6),
+        ),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItem(Iconsax.home, 0),
-          _buildNavItem(Iconsax.calendar, 1),
-          _buildNavItem(Iconsax.chart_1, 2),
-          _buildNavItem(Iconsax.favorite_chart, 3),
-          _buildNavItem(Iconsax.ranking4, 4),
+          _buildNavItem(Iconsax.home, 'HOME', 0),
+          _buildNavItem(Iconsax.calendar, 'DAILY', 1),
+          _buildNavItem(Iconsax.chart_1, 'CLASH', 2),
+          _buildNavItem(Iconsax.favorite_chart, 'RANK', 3),
+          _buildNavItem(Iconsax.ranking4, 'FRIENDS', 4),
         ],
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, int index) {
+  Widget _buildNavItem(IconData icon, String label, int index) {
     bool isActive = _selectedIndex == index;
+    
+    // Define colors for each nav item
+    Color itemColor;
+    switch (index) {
+      case 0:
+        itemColor = const Color(0xFF0066FF); // Blue
+        break;
+      case 1:
+        itemColor = const Color(0xFF00E676); // Green
+        break;
+      case 2:
+        itemColor = const Color(0xFFFF3366); // Red
+        break;
+      case 3:
+        itemColor = const Color(0xFF6C5CE7); // Purple
+        break;
+      case 4:
+        itemColor = const Color(0xFFFFD700); // Gold
+        break;
+      default:
+        itemColor = Colors.white;
+    }
 
     return GestureDetector(
       onTap: () => setState(() => _selectedIndex = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.all(8),
-        child: AnimatedScale(
-          duration: const Duration(milliseconds: 200),
-          scale: isActive ? 1.3 : 1.0,
-          child: Icon(
-            icon,
-            color: Colors.black,
-            size: isActive ? 30 : 25,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? itemColor : Colors.transparent,
+          border: Border.all(
+            color: isActive ? Colors.white : Colors.transparent,
+            width: 3,
           ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: isActive ? Colors.black : itemColor,
+              size: 28,
+              shadows: isActive
+                  ? [
+                      const Shadow(
+                        color: Colors.white,
+                        offset: Offset(2, 2),
+                        blurRadius: 0,
+                      ),
+                    ]
+                  : [],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive ? Colors.black : itemColor,
+                fontSize: 9,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+                shadows: isActive
+                    ? [
+                        const Shadow(
+                          color: Colors.white,
+                          offset: Offset(1, 1),
+                          blurRadius: 0,
+                        ),
+                      ]
+                    : [],
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:lstats/views/auth/pages/loadingindicator.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 
 class DailyPage extends StatefulWidget {
   const DailyPage({Key? key}) : super(key: key);
@@ -66,40 +68,20 @@ class _DailyPageState extends State<DailyPage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: Colors.black),
-              )
+            ? BrutalistLoadingIndicator()
             : Column(
                 children: [
-                  // Stripe 1: Header
                   Container(
                     width: double.infinity,
-                    color: const Color(0xFFFF6B3D),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.08,
-                      vertical: screenHeight * 0.02,
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        'Daily Challenge',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: screenWidth * 0.082,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -2,
-                        ),
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: const Border(
+                        bottom: BorderSide(color: Colors.black, width: 4),
+                        top: BorderSide(color: Colors.black, width: 4),
+                        left: BorderSide(color: Colors.black, width: 4),
+                        right: BorderSide(color: Colors.black, width: 4),
                       ),
-                    ),
-                  ),
-
-                  // Stripe 2: Title + Difficulty
-                  Container(
-                    color: Colors.white,
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.05,
-                      vertical: screenHeight * 0.015,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -108,26 +90,28 @@ class _DailyPageState extends State<DailyPage> {
                           title,
                           style: TextStyle(
                             color: Colors.black,
-                            fontSize: screenWidth * 0.05,
-                            fontWeight: FontWeight.w800,
+                            fontSize: screenWidth * 0.06,
+                            fontWeight: FontWeight.w900,
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            vertical: 4,
-                            horizontal: 14,
-                          ),
+                              vertical: 6, horizontal: 16),
                           decoration: BoxDecoration(
                             color: getDifficultyColor(difficulty),
-                         
+                            border: const Border(
+                              right: BorderSide(color: Colors.black, width: 3),
+                              bottom: BorderSide(color: Colors.black, width: 3),
+                            ),
                           ),
                           child: Text(
-                            difficulty,
+                            difficulty.toUpperCase(),
                             style: const TextStyle(
                               color: Colors.white,
+                              fontWeight: FontWeight.w900,
                               fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
                             ),
                           ),
                         ),
@@ -135,14 +119,19 @@ class _DailyPageState extends State<DailyPage> {
                     ),
                   ),
 
-                  // Stripe 3: Scrollable description
+                  // 🔸 Scrollable problem description
                   Expanded(
                     child: Container(
                       width: double.infinity,
-                      color: const Color(0xFFFFB84D),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.06,
-                        vertical: screenHeight * 0.02,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFB84D),
+                        border: Border(
+                          bottom: BorderSide(color: Colors.black, width: 6),
+                        ),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
                       ),
                       child: SingleChildScrollView(
                         child: Html(
@@ -160,21 +149,21 @@ class _DailyPageState extends State<DailyPage> {
                     ),
                   ),
 
-                  // Stripe 4: Bottom stripe with Solve + footer text
+                  // 🔸 Bottom action stripe
                   Container(
-                    color: const Color(0xFFE84855),
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(
-                      vertical: screenHeight * 0.02,
+                    color: const Color(0xFFE84855),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 20,
+                      horizontal: 24,
                     ),
                     child: Column(
                       children: [
                       
-                        Text(
+                        const Text(
                           "Stay consistent. Solve one daily!",
                           style: TextStyle(
-                            color: const Color(0xFFFAFAFA),
-                            fontSize: screenWidth * 0.035,
+                            color: Colors.white,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

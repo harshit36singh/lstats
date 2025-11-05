@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Outer shadow -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#88000000" />
+            <corners android:radius="12dp" />
+        </shape>
+    </item>
+
+    <!-- Inner box with border -->
+    <item android:left="4dp" android:top="4dp" android:right="4dp" android:bottom="4dp">
+        <shape android:shape="rectangle">
+            <!-- Background color (you can change this) -->
+            <solid android:color="#8000FF" />
+            <!-- Thick black border -->
+            <stroke android:width="3dp" android:color="#000000" />
+            <corners android:radius="4dp" />
+        </shape>
+    </item>
+
+</layer-list>

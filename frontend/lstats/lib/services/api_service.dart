@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const baseurl = "https://lstatsbackend-production.up.railway.app";
+  static const baseurl = "https://lstats-railway-backend-production.up.railway.app";
 
   // Login returns only JWT now
   static Future<String> login(String username, String password) async {

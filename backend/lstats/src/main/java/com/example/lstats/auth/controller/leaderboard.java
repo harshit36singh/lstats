@@ -10,11 +10,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+
+import com.example.lstats.repository.GroupRepo;
 import com.example.lstats.repository.UserRepository;
+import com.example.lstats.model.Group;
 import com.example.lstats.model.User;
 
 class Leader {
@@ -28,7 +32,7 @@ class Leader {
     Leader(int e, int m, int h, String img, String clgname) {
         this.e = e;
         this.m = m;
-        
+
         this.h = h;
         this.img = img;
         this.clgname = clgname;
@@ -50,10 +54,14 @@ public class leaderboard {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private GroupRepo grouprepo;
+
     private final RestTemplate restTemplate = new RestTemplate();
     private final Map<String, Leader> leadercache = new ConcurrentHashMap<>();
 
-    @Scheduled(fixedRate = 3600000) void refreshleaderboard() {
+    @Scheduled(fixedRate = 3600000)
+    void refreshleaderboard() {
         List<User> users = userRepository.findAll();
 
         for (User user : users) {
@@ -89,9 +97,9 @@ public class leaderboard {
     @GetMapping("/global")
     public List<Map<String, Object>> globalleaberboard(@RequestParam(required = false) String collegename) {
         List<Map<String, Object>> list = new ArrayList<>();
-        
+
         leadercache.forEach((username, entry) -> {
-            User user=userRepository.findByUsername(username).orElse(null);
+            User user = userRepository.findByUsername(username).orElse(null);
             Map<String, Object> e = new HashMap<>();
             e.put("id", user.getId());
             e.put("username", username);
@@ -156,8 +164,34 @@ public class leaderboard {
         return list;
     }
 
+    @GetMapping("group/{groupid}")
+    public List<Map<String,Object>> groupleaderboard(@PathVariable Long groupid){
+        Group group=grouprepo.findById(groupid).orElseThrow(()->new RuntimeException("Group Not Found"));
+        List<Map<String,Object>> li=new ArrayList<>();
+        for(User user:group.getMembers()){
+            Leader ui=leadercache.get(user.getUsername());
+            if(en!=null){
+                Map<String,Object> e=new HashMap<>();
+                e.put("id",user.getId());
+                e.put("username",user.getUsername());
+                e.put("solved",ui.gettotalsolved());
+                e.put("avatar",ui.img!=null?ui.img:"");
+                e.put("points",ui.getpoints());
+                e.put("clg", ui.clgname);
+                li.add(e);
+            }
+        }
+        li.sort((a,b)->((Integer)b.get("points"))-(Integer)a.get("points"));
 
 
-    
+        for (int i = 0; i < li.size(); i++) {
+            li.get(i).put("rank",i+1);
+            
+        }
+
+
+
+        return li;
+    }
 
 }

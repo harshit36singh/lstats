@@ -1,58 +1,112 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
-class CreateGroupPage extends StatefulWidget {
-  const CreateGroupPage({super.key});
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+class Groupleaderboard extends StatefulWidget {
+  final int groupid;
+  final String groupname;
+  const Groupleaderboard({
+    super.key,
+    required this.groupid,
+    required this.groupname,
+  });
 
   @override
-  State<CreateGroupPage> createState() => _CreateGroupPageState();
+  State<Groupleaderboard> createState() => _GroupleaderboardState();
 }
-//https://chatgpt.com/c/690833cf-b8ec-8320-aeb7-ace47b3ced74
 
-class _CreateGroupPageState extends State<CreateGroupPage> {
-  final TextEditingController name=TextEditingController();
+class _GroupleaderboardState extends State<Groupleaderboard> {
+  List<dynamic> l = [];
+  bool isLoading = true;
+
+  Future<void> fetchgroupleaderboard() async {
+    try {
+      final res = await http.get(
+        Uri.parse(
+          'https://lstats-railway-backend-production.up.railway.app/leaderboard/group/${widget.groupid}',
+        ),
+      );
+
+     if(res.statusCode==200){
+      setState(() {
+        l=jsonDecode(res.body);
+        isLoading=false;
+      });
+     }
+     else{
+      print("failed to load leaderboard : ${res.body}");
+     } 
+    } catch (e) {
+
+      print("$e");
+    }
+  }
+
+
+@override
+  void initState() {
+    super.initState();
+    fetchgroupleaderboard();
+  }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFF7E0),
-      appBar: AppBar(
-        title: Text("Create Group",style: TextStyle(color: Colors.black),),
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: Padding(padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          const Text("Enter Group Name",
-          style: TextStyle(fontWeight: FontWeight.bold,fontSize: 18),
-          ),
-          const SizedBox(height: 10,),
-          TextField(
-            controller: name,
-            decoration: InputDecoration(
-              hintText: "e.g. Coders"
-              ,border: OutlineInputBorder(),
-              filled: true,
-              fillColor: Colors.white
-            )
-          ),
-          const SizedBox(height: 30,),
-          ElevatedButton.icon(
-            icon:Icon(Icons.check),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 40,vertical: 14)
-            ),
-            onPressed: (){
-              final n=name.text.trim();
-              if(n.isNotEmpty){
-                Navigator.pop(context,n);
-              }
 
-            }, label: const Text("Create"))
-        ],
-      ),
-      ),
+
+    if(isLoading){
+      return const Center(child: Text("No members in this group."),);
+    }
+
+    if(l.isEmpty){
+      return const Center(child: Text("No members in this group"),);
+    }
+    return  Column(
+      children: [
+        Container(
+          color: Colors.amber,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          width: double.infinity,
+          child: Text(
+            widget.groupname.toUpperCase(),
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: Colors.black,
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: l.length,
+            itemBuilder: (context, i) {
+              final user = l[i];
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: user['avatar'] != null &&
+                          user['avatar'].toString().isNotEmpty
+                      ? NetworkImage(user['avatar'])
+                      : null,
+                  backgroundColor: Colors.black12,
+                  child: Text(
+                    '${user['rank']}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                title: Text(user['username']),
+                subtitle: Text(user['clg'] ?? ''),
+                trailing: Text(
+                  "${user['points']}",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

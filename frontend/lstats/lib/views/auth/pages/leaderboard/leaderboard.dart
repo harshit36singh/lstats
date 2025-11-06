@@ -1,11 +1,9 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:http/http.dart' as http;
 import 'package:lstats/services/api_service.dart';
 import 'package:lstats/views/auth/pages/loadingindicator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Leaderboard extends StatefulWidget {
   const Leaderboard({super.key});
@@ -33,7 +31,6 @@ class _LeaderboardState extends State<Leaderboard> {
     setState(() {
       currentuserid = id;
     });
-    print("Loaded current user id: $currentuserid");
   }
 
   Future<void> fetchLeaderboard() async {
@@ -61,7 +58,6 @@ class _LeaderboardState extends State<Leaderboard> {
   }
 
   Future<void> sendFriendRequest(int receiverId) async {
-    print("receiverid : $receiverId");
     if (currentuserid == null) return;
 
     final url = Uri.parse(
@@ -75,10 +71,7 @@ class _LeaderboardState extends State<Leaderboard> {
           SnackBar(
             content: const Text(
               "FRIEND REQUEST SENT!",
-              style: TextStyle(
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
             ),
             backgroundColor: const Color(0xFF00E676),
             behavior: SnackBarBehavior.floating,
@@ -93,10 +86,7 @@ class _LeaderboardState extends State<Leaderboard> {
           SnackBar(
             content: Text(
               "FAILED: ${response.body}",
-              style: const TextStyle(
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
             ),
             backgroundColor: const Color(0xFFFF3366),
             behavior: SnackBarBehavior.floating,
@@ -112,10 +102,7 @@ class _LeaderboardState extends State<Leaderboard> {
         SnackBar(
           content: Text(
             "ERROR: $e",
-            style: const TextStyle(
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1),
           ),
           backgroundColor: const Color(0xFFFF3366),
           behavior: SnackBarBehavior.floating,
@@ -132,9 +119,7 @@ class _LeaderboardState extends State<Leaderboard> {
     setState(() {
       searchQuery = query;
       filtered = leaderboard
-          .where(
-            (u) => u['username'].toLowerCase().contains(query.toLowerCase()),
-          )
+          .where((u) => u['username'].toLowerCase().contains(query.toLowerCase()))
           .toList();
     });
   }
@@ -145,93 +130,46 @@ class _LeaderboardState extends State<Leaderboard> {
       backgroundColor: const Color(0xFFF8F9FA),
       body: Column(
         children: [
-          // Search Header
+          // Minimal search bar
           Container(
-            width: double.infinity,
+            padding: const EdgeInsets.all(12),
             decoration: const BoxDecoration(
-              color: Colors.amber,
+              color: Colors.white,
               border: Border(
-                bottom: BorderSide(color: Colors.black, width: 4),
+                bottom: BorderSide(color: Colors.black, width: 2),
               ),
             ),
-            padding: const EdgeInsets.all(16),
             child: Container(
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.black, width: 3),
-                color: Colors.white,
+                border: Border.all(color: Colors.black, width: 1.5),
+                color: const Color(0xFFF8F9FA),
               ),
               child: TextField(
                 onChanged: _filter,
                 style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
                 decoration: const InputDecoration(
-                  hintText: 'SEARCH PLAYERS...',
+                  hintText: 'Search...',
                   hintStyle: TextStyle(
-                    color: Color(0xFFCCCCCC),
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
                   ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: Colors.black,
-                    size: 22,
-                  ),
+                  prefixIcon: Icon(Icons.search, color: Colors.black54, size: 20),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
               ),
             ),
           ),
+          
           Expanded(
             child: isLoading
                 ? BrutalistLoadingIndicator()
                 : filtered.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(32),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFF3366),
-                                border: Border.all(color: Colors.black, width: 4),
-                              ),
-                              child: const Icon(
-                                Icons.search_off_rounded,
-                                size: 80,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 12,
-                              ),
-                              decoration: const BoxDecoration(
-                                color: Colors.black,
-                              ),
-                              child: Text(
-                                searchQuery.isEmpty
-                                    ? 'NO DATA FOUND'
-                                    : 'NO USERS FOUND',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 2,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
+                    ? _buildEmptyState()
                     : ListView.builder(
                         padding: const EdgeInsets.all(12),
                         itemCount: filtered.length,
@@ -239,7 +177,7 @@ class _LeaderboardState extends State<Leaderboard> {
                           final user = filtered[index];
                           final rank = user['rank'] ?? (index + 1);
                           return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.only(bottom: 8),
                             child: _buildUserCard(user, rank, index),
                           );
                         },
@@ -250,113 +188,147 @@ class _LeaderboardState extends State<Leaderboard> {
     );
   }
 
-  Widget _buildUserCard(dynamic user, int rank, int index) {
-    final List<Color> colors = [
-      const Color(0xFFFFD700), // Gold for top 1
-      const Color(0xFFC0C0C0), // Silver for top 2
-      const Color(0xFFCD7F32), // Bronze for top 3
-      const Color(0xFF00D4FF),
-      const Color(0xFFFF3366),
-      const Color(0xFFFFB84D),
-      const Color(0xFF6C5CE7),
-      const Color(0xFF00E676),
-      Colors.white,
-    ];
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black, width: 2),
+              color: Colors.white,
+            ),
+            child: const Icon(
+              Icons.search_off,
+              size: 48,
+              color: Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            decoration: const BoxDecoration(color: Colors.black),
+            child: Text(
+              searchQuery.isEmpty ? 'NO DATA' : 'NO USERS FOUND',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-    final color = index < 3 ? colors[index] : colors[(index % (colors.length - 3)) + 3];
+  Widget _buildUserCard(dynamic user, int rank, int index) {
+    final bool iscurrentuser = user['id'] == currentuserid;
+    
+    Color rankColor;
+    
+    if (rank == 1) {
+      rankColor = const Color(0xFFFFD700);
+    } else if (rank == 2) {
+      rankColor = const Color(0xFFE0E0E0);
+    } else if (rank == 3) {
+      rankColor = const Color(0xFFFFB84D);
+    } else {
+      rankColor = Colors.white;
+    }
 
     return Container(
-      height: 100,
+      height: 70,
       decoration: BoxDecoration(
-        color: color,
-        border: Border.all(color: Colors.black, width: 3),
+        color: Colors.white,
+        border: Border.all(
+          color: iscurrentuser ? const Color(0xFF00E676) : Colors.black,
+          width: iscurrentuser ? 2.5 : 1.5,
+        ),
       ),
       child: Row(
         children: [
-          // Rank Section
+          // Rank
           Container(
-            width: 70,
-            decoration: const BoxDecoration(
-              color: Colors.black,
-              border: Border(
-                right: BorderSide(color: Colors.black, width: 3),
-              ),
+            width: 50,
+            decoration: BoxDecoration(
+              color: rankColor,
+              border: Border(right: BorderSide(color: Colors.black, width: 1.5)),
             ),
             child: Center(
               child: Text(
                 '#$rank',
-                style: TextStyle(
-                  fontSize: 24,
+                style: const TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.w900,
-                  color: color,
-                  letterSpacing: -1,
+                  color: Colors.black,
                 ),
               ),
             ),
           ),
-    
-          // Avatar Section
+
+          // Avatar
           Container(
-            width: 70,
-            height: 70,
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+            width: 50,
+            height: 50,
+            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.black, width: 3),
+              border: Border.all(color: Colors.black, width: 1.5),
             ),
             child: Image.network(
               user['avatar'] ?? 'https://via.placeholder.com/150',
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: Colors.grey[200],
+                  child: const Icon(Icons.person, size: 24, color: Colors.black54),
+                );
+              },
             ),
           ),
-    
-          // Info Section
+
+          // Info
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              padding: const EdgeInsets.only(left: 4),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    user['username'] ?? 'Unknown',
+                    iscurrentuser ? 'You' : (user['username'] ?? 'Unknown'),
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
                       color: Colors.black,
-                      letterSpacing: -0.5,
-                      height: 1.2,
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: const BoxDecoration(
-                          color: Colors.black,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: const BoxDecoration(color: Colors.black),
                         child: Text(
-                          '${user['points']} PTS',
+                          '${user['points']}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
-                            fontSize: 12,
-                            letterSpacing: 0.5,
+                            fontSize: 10,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Text(
                         '${user['solved']} solved',
                         style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.black87,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black54,
                         ),
                       ),
                     ],
@@ -365,27 +337,22 @@ class _LeaderboardState extends State<Leaderboard> {
               ),
             ),
           ),
-    
-          // Action Button
-          Container(
-            width: 60,
-            decoration: const BoxDecoration(
-              color: Colors.black,
-              border: Border(
-                left: BorderSide(color: Colors.black, width: 3),
-              ),
-            ),
-            child: GestureDetector(
-               onTap: () => _showProfileDialog(user),
-              child: const Center(
-                child: Icon(
-                  Icons.more_vert,
-                  color: Colors.white,
-                  size: 32,
+
+          // More button
+          if (!iscurrentuser)
+            GestureDetector(
+              onTap: () => _showProfileDialog(user),
+              child: Container(
+                width: 40,
+                decoration: const BoxDecoration(
+                  color: Colors.black,
+                  border: Border(left: BorderSide(color: Colors.black, width: 1.5)),
+                ),
+                child: const Center(
+                  child: Icon(Icons.more_vert, color: Colors.white, size: 20),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -396,81 +363,64 @@ class _LeaderboardState extends State<Leaderboard> {
       context: context,
       builder: (context) {
         return Dialog(
-          shape: const RoundedRectangleBorder(
-            side: BorderSide(color: Colors.black, width: 4),
+          shape: RoundedRectangleBorder(
+            side: const BorderSide(color: Colors.black, width: 3),
             borderRadius: BorderRadius.zero,
           ),
           child: Container(
-            padding: const EdgeInsets.all(28),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: Colors.black, width: 4),
+              border: Border.all(color: Colors.black, width: 3),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Avatar
                 Container(
+                  width: 80,
+                  height: 80,
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black, width: 4),
-                  ),
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(
-                          user['avatar'] ?? 'https://via.placeholder.com/150',
-                        ),
-                        fit: BoxFit.cover,
+                    border: Border.all(color: Colors.black, width: 2),
+                    image: DecorationImage(
+                      image: NetworkImage(
+                        user['avatar'] ?? 'https://via.placeholder.com/150',
                       ),
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // Username
                 Text(
                   user['username'] ?? 'Unknown',
                   style: const TextStyle(
-                    fontSize: 28,
+                    fontSize: 20,
                     fontWeight: FontWeight.w900,
                     color: Colors.black,
-                    letterSpacing: -1,
-                    height: 1,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
 
-                // Rank Badge
+                // Rank
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  decoration: const BoxDecoration(
-                    color: Colors.amber,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: const BoxDecoration(color: Colors.black),
                   child: Text(
                     'RANK #${user['rank'] ?? 'N/A'}',
                     style: const TextStyle(
-                      color: Colors.black,
+                      color: Colors.white,
                       fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                      letterSpacing: 2,
-                      shadows: [
-                        Shadow(
-                          color: Colors.white,
-                          offset: Offset(2, 2),
-                        ),
-                      ],
+                      fontSize: 13,
+                      letterSpacing: 1.5,
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-                // Stats Row
+                // Stats
                 Row(
                   children: [
                     Expanded(
@@ -480,7 +430,7 @@ class _LeaderboardState extends State<Leaderboard> {
                         const Color(0xFFFFD700),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: _buildStatBox(
                         '${user['solved'] ?? 0}',
@@ -490,45 +440,36 @@ class _LeaderboardState extends State<Leaderboard> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
-                // Action Buttons
+                // Buttons
                 Row(
                   children: [
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          if (user['userid'] != null &&
-                              user['userid'] != currentuserid) {
-                            sendFriendRequest(user['userid']);
+                          if (user['id'] != null && user['id'] != currentuserid) {
+                            sendFriendRequest(user['id']);
                             Navigator.pop(context);
                           }
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
-                            color: user['userid'] == currentuserid
-                                ? const Color(0xFFCCCCCC)
-                                : const Color(0xFFFF3366),
-                            border: Border.all(color: Colors.black, width: 3),
+                            color: Colors.black,
+                            border: Border.all(color: Colors.black, width: 2),
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(
-                                Icons.person_add,
-                                color: Colors.black,
-                                size: 22,
-                              ),
-                              const SizedBox(width: 8),
+                              Icon(Icons.person_add, color: Colors.white, size: 16),
+                              SizedBox(width: 6),
                               Text(
-                                user['userid'] == currentuserid
-                                    ? 'YOU'
-                                    : 'ADD FRIEND',
-                                style: const TextStyle(
-                                  color: Colors.black,
+                                'ADD',
+                                style: TextStyle(
+                                  color: Colors.white,
                                   fontWeight: FontWeight.w900,
-                                  fontSize: 15,
+                                  fontSize: 12,
                                   letterSpacing: 1,
                                 ),
                               ),
@@ -537,20 +478,16 @@ class _LeaderboardState extends State<Leaderboard> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          border: Border.all(color: Colors.black, width: 3),
+                          border: Border.all(color: Colors.black, width: 2),
                         ),
-                        child: const Icon(
-                          Icons.close,
-                          color: Colors.black,
-                          size: 22,
-                        ),
+                        child: const Icon(Icons.close, color: Colors.black, size: 18),
                       ),
                     ),
                   ],
@@ -565,10 +502,10 @@ class _LeaderboardState extends State<Leaderboard> {
 
   Widget _buildStatBox(String value, String label, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
         color: color,
-        border: Border.all(color: Colors.black, width: 3),
+        border: Border.all(color: Colors.black, width: 2),
       ),
       child: Column(
         children: [
@@ -577,17 +514,10 @@ class _LeaderboardState extends State<Leaderboard> {
             child: Text(
               value,
               style: const TextStyle(
-                fontSize: 32,
+                fontSize: 24,
                 fontWeight: FontWeight.w900,
                 color: Colors.black,
                 height: 1,
-                letterSpacing: -1,
-                shadows: [
-                  Shadow(
-                    color: Colors.white,
-                    offset: Offset(2, 2),
-                  ),
-                ],
               ),
             ),
           ),
@@ -595,10 +525,10 @@ class _LeaderboardState extends State<Leaderboard> {
           Text(
             label,
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 9,
               fontWeight: FontWeight.w900,
               color: Colors.black,
-              letterSpacing: 1.5,
+              letterSpacing: 1.2,
             ),
           ),
         ],

@@ -54,5 +54,10 @@ public class GroupController {
         return groupservice.getpendinginvites(username);
     }
 
+    @GetMapping("/{groupid}/members")
+    public ResponseEntity<List<String>> getgroupmembers(@PathVariable Long id){
+        return ResponseEntity.ok(groupservice.getgroupmembers(id));
+
+    }
     
 }

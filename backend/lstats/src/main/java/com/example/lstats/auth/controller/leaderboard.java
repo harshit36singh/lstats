@@ -170,7 +170,7 @@ public class leaderboard {
         List<Map<String,Object>> li=new ArrayList<>();
         for(User user:group.getMembers()){
             Leader ui=leadercache.get(user.getUsername());
-            if(en!=null){
+            if(ui!=null){
                 Map<String,Object> e=new HashMap<>();
                 e.put("id",user.getId());
                 e.put("username",user.getUsername());

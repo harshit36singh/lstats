@@ -3,6 +3,7 @@ package com.example.lstats.auth.controller;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 
 import com.example.lstats.auth.dto.ChatMessageDto;
@@ -11,6 +12,8 @@ import com.example.lstats.repository.Charrepo;
 
 import jakarta.validation.Valid;
 
+
+@Controller
 public class ChatController {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final Charrepo charrepo;

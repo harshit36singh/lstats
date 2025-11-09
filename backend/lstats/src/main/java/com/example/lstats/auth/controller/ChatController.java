@@ -3,24 +3,28 @@ package com.example.lstats.auth.controller;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.validation.annotation.Validated;
 
 import com.example.lstats.auth.dto.ChatMessageDto;
 import com.example.lstats.model.Chat;
 import com.example.lstats.repository.Charrepo;
 
+import jakarta.validation.Valid;
+
 public class ChatController {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final Charrepo charrepo;
 
-    public ChatController(SimpMessagingTemplate simpMessagingTemplate) {
+    public ChatController(SimpMessagingTemplate simpMessagingTemplate,Charrepo charrepo) {
         this.simpMessagingTemplate = simpMessagingTemplate;
-        this.charrepo = null;
+        this.charrepo = charrepo;
     }
     
 
+    @Validated
     @MessageMapping("/chat.send")
     @SendTo("/topic/Global")
-    public ChatMessageDto sendmessage(ChatMessageDto c){
+    public ChatMessageDto sendmessage(@Valid ChatMessageDto c){
         c.setTimestamp(System.currentTimeMillis());
         Chat chat=new Chat();
         chat.setSender(c.getSender());

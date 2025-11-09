@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 public class ChatCleanupService {
 
     private final Charrepo charrepo;
+    private static final long m=262_000;
 
     public ChatCleanupService(Charrepo charrepo) {
         this.charrepo = charrepo;
@@ -20,9 +21,15 @@ public class ChatCleanupService {
 
     @Transactional
     @Scheduled(fixedRate = 3600000)
-    public void deleteoldmessages(int limit){
-        List<Chat> oldchatstodelete=charrepo.findoldchats(PageRequest.of(0,limit));
-        charrepo.deleteAll(oldchatstodelete);
-
+    public void deleteoldmessages(){
+        long usedm=charrepo.count();
+        if(usedm>m){
+            int batchsize=100;
+        List<Chat> oldchatstodelete=charrepo.findoldchats(PageRequest.of(0,batchsize));
+        if(!oldchatstodelete.isEmpty()){
+            charrepo.deleteAll(oldchatstodelete);
+            
+        }
+        }
     }
 }

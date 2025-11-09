@@ -2,6 +2,7 @@ package com.example.lstats.auth.controller;
 
 import java.util.List;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,21 +17,28 @@ import com.example.lstats.service.friendrequestservice;
 @RequestMapping("/friends")
 public class FriendRequestController {
     private final friendrequestservice friendrequestService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
-    FriendRequestController(friendrequestservice f) {
+    FriendRequestController(friendrequestservice f,SimpMessagingTemplate s) {
         this.friendrequestService = f;
+        this.simpMessagingTemplate = s;
 
     }
 
     @PostMapping("/send")
     public friendmodel sendreq(@RequestParam Long senderid, @RequestParam Long receiverid) {
-        return friendrequestService.sendreq(senderid, receiverid);
+        friendmodel f= friendrequestService.sendreq(senderid, receiverid);
+        simpMessagingTemplate.convertAndSend("queue/friend"+receiverid+f);
+
+        return f;
 
     }
 
     @PostMapping("/accept/{requestid}")
     public friendmodel acceptreq(@PathVariable Long requestid) {
-        return friendrequestService.acceptreq(requestid);
+        friendmodel f= friendrequestService.acceptreq(requestid);
+        simpMessagingTemplate.convertAndSend("queue/friend"+f.getSender()+f);
+        return f;
     }
 
     @PostMapping("/reject/{requestid}")

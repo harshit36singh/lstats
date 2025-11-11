@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.lstats.model.User;
 import com.example.lstats.model.friendmodel;
 import com.example.lstats.repository.UserRepository;
-import com.example.lstats.service.friendrequestservice;@RestController
+import com.example.lstats.service.friendrequestservice;
+
+
+@RestController
 @RequestMapping("/friends")
 public class FriendRequestController {
 

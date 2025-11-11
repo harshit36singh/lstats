@@ -8,8 +8,8 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-
 import com.example.lstats.service.OnlinePresenceService;
+
 @Component
 public class PresenceEventListener {
     private final OnlinePresenceService onlinePresenceService;

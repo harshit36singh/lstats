@@ -1,5 +1,7 @@
 package com.example.lstats.service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -8,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class OnlinePresenceService {
     private final SimpMessagingTemplate simpMessagingTemplate;
-    private final Set<String> onlineusers = new HashSet<>();
+    private final Set<String> onlineusers = Collections.synchronizedSet(new HashSet<>());
 
     public OnlinePresenceService(SimpMessagingTemplate simpMessagingTemplate) {
         this.simpMessagingTemplate = simpMessagingTemplate;
@@ -17,7 +19,6 @@ public class OnlinePresenceService {
     public void userconnected(String username) {
         onlineusers.add(username);
         broadcastliveusers();
-
     }
 
     public void userdisconnected(String username) {
@@ -26,6 +27,11 @@ public class OnlinePresenceService {
     }
 
     public void broadcastliveusers() {
-        simpMessagingTemplate.convertAndSend("/topic/presence", onlineusers);
+        simpMessagingTemplate.convertAndSend("/topic/presence", new ArrayList<>(onlineusers));
+    
+    }
+
+    public Set<String> getOnlineUsers() {
+        return new HashSet<>(onlineusers);
     }
 }

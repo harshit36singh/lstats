@@ -47,24 +47,31 @@ public class FriendRequestController {
 
         return f;
     }
+@PostMapping("/accept/{requestid}")
+public friendmodel acceptreq(@PathVariable Long requestid) {
 
-    @PostMapping("/accept/{requestid}")
-    public friendmodel acceptreq(@PathVariable Long requestid) {
+    friendmodel f = friendrequestService.acceptreq(requestid);
 
-        friendmodel f = friendrequestService.acceptreq(requestid);
+    // ✅ notify the original sender, not receiver
+    String senderUsername = f.getSender().getUsername();
 
-        // ✅ sender username directly
-        String senderUsername = f.getReceiver().getUsername();
+    System.out.println("✅ Friend accepted → notifying: " + senderUsername);
 
-        System.out.println("✅ Friend accepted → notifying: " + senderUsername);
+    FriendRequestDto dto = new FriendRequestDto(
+            f.getId(),
+            f.getSender().getUsername(),
+            f.getReceiver().getUsername(),
+            f.getStatus().name() // will be ACCEPTED now
+    );
 
-        simpMessagingTemplate.convertAndSendToUser(
-                senderUsername,
-                "/queue/friend",
-                f);
+    simpMessagingTemplate.convertAndSendToUser(
+            senderUsername,
+            "/queue/friend",
+            dto
+    );
 
-        return f;
-    }
+    return f;
+}
 
     @PostMapping("/reject/{requestid}")
     public friendmodel rejectreq(@PathVariable Long requestid) {

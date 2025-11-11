@@ -35,7 +35,7 @@ public class FriendRequestController {
         friendmodel f = friendrequestService.sendreq(senderid, receiverid);
 
         // ✅ receiver username directly from entity
-        String receiverUsername = f.getReceiver().getUsername();
+        String receiverUsername = f.getSender().getUsername();
 
         System.out.println("📨 Sending friend request WS to: " + receiverUsername);
 
@@ -54,7 +54,7 @@ public class FriendRequestController {
         friendmodel f = friendrequestService.acceptreq(requestid);
 
         // ✅ sender username directly
-        String senderUsername = f.getSender().getUsername();
+        String senderUsername = f.getReceiver().getUsername();
 
         System.out.println("✅ Friend accepted → notifying: " + senderUsername);
 

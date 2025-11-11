@@ -17,18 +17,28 @@ public class OnlinePresenceService {
     }
 
     public void userconnected(String username) {
-        onlineusers.add(username);
+        boolean added = onlineusers.add(username);
+        System.out.println("✅ userconnected() called for: " + username);
+        System.out.println("   Was new user? " + added);
+        System.out.println("   Total online: " + onlineusers.size());
+        System.out.println("   Online users: " + onlineusers);
         broadcastliveusers();
     }
 
     public void userdisconnected(String username) {
-        onlineusers.remove(username);
+        boolean removed = onlineusers.remove(username);
+        System.out.println("❌ userdisconnected() called for: " + username);
+        System.out.println("   Was removed? " + removed);
+        System.out.println("   Total online: " + onlineusers.size());
+        System.out.println("   Online users: " + onlineusers);
         broadcastliveusers();
     }
 
     public void broadcastliveusers() {
-        simpMessagingTemplate.convertAndSend("/topic/presence", new ArrayList<>(onlineusers));
-    
+        ArrayList<String> userList = new ArrayList<>(onlineusers);
+        System.out.println("📡 Broadcasting to /topic/presence: " + userList);
+        simpMessagingTemplate.convertAndSend("/topic/presence", userList);
+        System.out.println("✅ Broadcast complete");
     }
 
     public Set<String> getOnlineUsers() {

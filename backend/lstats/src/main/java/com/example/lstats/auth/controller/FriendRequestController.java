@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.lstats.auth.dto.FriendRequestDto;
 import com.example.lstats.model.User;
 import com.example.lstats.model.friendmodel;
 import com.example.lstats.repository.UserRepository;
 import com.example.lstats.service.friendrequestservice;
-
 
 @RestController
 @RequestMapping("/friends")
@@ -24,7 +24,7 @@ public class FriendRequestController {
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     public FriendRequestController(friendrequestservice friendrequestService,
-                                   SimpMessagingTemplate simpMessagingTemplate) {
+            SimpMessagingTemplate simpMessagingTemplate) {
         this.friendrequestService = friendrequestService;
         this.simpMessagingTemplate = simpMessagingTemplate;
     }
@@ -34,16 +34,16 @@ public class FriendRequestController {
 
         friendmodel f = friendrequestService.sendreq(senderid, receiverid);
 
-        // ✅ receiver username directly from entity
-        String receiverUsername = f.getSender().getUsername();
-
-        System.out.println("📨 Sending friend request WS to: " + receiverUsername);
+        FriendRequestDto dto = new FriendRequestDto(
+                f.getId(),
+                f.getSender().getUsername(),
+                f.getReceiver().getUsername(),
+                f.getStatus().name());
 
         simpMessagingTemplate.convertAndSendToUser(
-                receiverUsername,
+                f.getReceiver().getUsername(),
                 "/queue/friend",
-                f
-        );
+                dto);
 
         return f;
     }
@@ -61,8 +61,7 @@ public class FriendRequestController {
         simpMessagingTemplate.convertAndSendToUser(
                 senderUsername,
                 "/queue/friend",
-                f
-        );
+                f);
 
         return f;
     }

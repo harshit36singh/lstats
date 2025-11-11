@@ -28,7 +28,7 @@ public class FriendRequestController {
     @PostMapping("/send")
     public friendmodel sendreq(@RequestParam Long senderid, @RequestParam Long receiverid) {
         friendmodel f= friendrequestService.sendreq(senderid, receiverid);
-        simpMessagingTemplate.convertAndSend("queue/friend"+receiverid+f);
+        simpMessagingTemplate.convertAndSendToUser(receiverid.toString(),"queue/friend",f);
 
         return f;
 

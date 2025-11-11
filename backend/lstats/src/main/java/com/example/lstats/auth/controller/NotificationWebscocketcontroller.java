@@ -15,7 +15,10 @@ public class NotificationWebscocketcontroller {
     }
 
     public void sendn(NotificationDto n) {
-        simpMessagingTemplate.convertAndSend("/queue/notifications" + n.getTargetuser() ,n.getMessage());
+        simpMessagingTemplate.convertAndSendToUser(
+                n.getTargetuser(),
+                "/queue/notifications",
+                n);
 
     }
 }

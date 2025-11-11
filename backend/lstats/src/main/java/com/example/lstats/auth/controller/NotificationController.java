@@ -19,9 +19,10 @@ public class NotificationController {
     private final NotificationService notificationservice;
     private final NotificationWebscocketcontroller notificationWebscocketcontroller;
 
-    public NotificationController(NotificationService notificationservice) {
+    public NotificationController(NotificationService notificationservice,
+            NotificationWebscocketcontroller notificationWebscocketcontroller) {
         this.notificationservice = notificationservice;
-        this.notificationWebscocketcontroller = null;
+        this.notificationWebscocketcontroller = notificationWebscocketcontroller;
     }
 
     @PostMapping("/create")

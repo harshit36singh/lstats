@@ -29,7 +29,6 @@ public class friendrequestservice {
                                 .orElseThrow(() -> new RuntimeException("Sender not found."));
                 User reciever = userrepository.findById(recieverid)
                                 .orElseThrow(() -> new RuntimeException("Receiver not found."));
-
                 if (Friendrequestrepository.findBySenderAndReceiver(sender, reciever).isPresent()) {
                         throw new RuntimeException("Request alread sent");
                 }

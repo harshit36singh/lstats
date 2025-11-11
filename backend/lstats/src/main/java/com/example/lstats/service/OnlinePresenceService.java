@@ -3,7 +3,9 @@ package com.example.lstats.service;
 import java.util.HashSet;
 import java.util.Set;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
 
+@Service
 public class OnlinePresenceService {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final Set<String> onlineusers = new HashSet<>();
@@ -24,6 +26,6 @@ public class OnlinePresenceService {
     }
 
     public void broadcastliveusers() {
-        simpMessagingTemplate.convertAndSend("topic/presence", onlineusers);
+        simpMessagingTemplate.convertAndSend("/topic/presence", onlineusers);
     }
 }

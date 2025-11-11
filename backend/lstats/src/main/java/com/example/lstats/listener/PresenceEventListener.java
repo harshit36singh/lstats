@@ -37,6 +37,8 @@ public void handleConnect(SessionConnectedEvent event) { // Changed here
     try {
         System.out.println("🔄 About to call userconnected for: " + username);
         onlinePresenceService.userconnected(username);
+        onlinePresenceService.broadcastliveusers(); // <--- ADD THIS
+
         System.out.println("🔄 userconnected call completed");
     } catch (Exception e) {
         System.out.println("❌ ERROR calling userconnected: " + e.getMessage());

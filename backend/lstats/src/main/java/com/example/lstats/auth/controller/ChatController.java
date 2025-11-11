@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import com.example.lstats.auth.dto.ChatMessageDto;
 import com.example.lstats.model.Chat;
 import com.example.lstats.repository.Charrepo;
+import com.example.lstats.service.OnlinePresenceService;
 
 import jakarta.validation.Valid;
 
@@ -17,10 +18,12 @@ public class ChatController {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final Charrepo charrepo;
+    private final OnlinePresenceService o;
 
     public ChatController(SimpMessagingTemplate simpMessagingTemplate, Charrepo charrepo) {
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.charrepo = charrepo;
+        this.o = null;
     }
 
     @Validated
@@ -39,5 +42,9 @@ public class ChatController {
     public void sendprivatemessage(ChatMessageDto c) {
         c.setTimestamp(System.currentTimeMillis());
         simpMessagingTemplate.convertAndSendToUser(c.getReceiver(), "/queue/private", c);
+    }
+     @MessageMapping("/presence.refresh")
+    public void refreshPresence() {
+        o.broadcastliveusers();
     }
 }

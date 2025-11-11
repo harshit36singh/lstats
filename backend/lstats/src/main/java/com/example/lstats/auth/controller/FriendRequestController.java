@@ -53,7 +53,8 @@ public friendmodel acceptreq(@PathVariable Long requestid) {
     friendmodel f = friendrequestService.acceptreq(requestid);
 
     // ✅ notify the original sender, not receiver
-    String senderUsername = f.getSender().getUsername();
+    String senderUsername = f.getReceiver().getUsername();
+
 
     System.out.println("✅ Friend accepted → notifying: " + senderUsername);
 

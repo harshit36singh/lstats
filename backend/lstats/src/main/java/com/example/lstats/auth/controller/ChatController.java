@@ -20,10 +20,10 @@ public class ChatController {
     private final Charrepo charrepo;
     private final OnlinePresenceService o;
 
-    public ChatController(SimpMessagingTemplate simpMessagingTemplate, Charrepo charrepo) {
+    public ChatController(SimpMessagingTemplate simpMessagingTemplate, Charrepo charrepo, OnlinePresenceService o) {
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.charrepo = charrepo;
-        this.o = null;
+        this.o = o;
     }
 
     @Validated

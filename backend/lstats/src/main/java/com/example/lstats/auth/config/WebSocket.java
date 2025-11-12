@@ -30,29 +30,29 @@ public class WebSocket implements WebSocketMessageBrokerConfigurer {
         r.setApplicationDestinationPrefixes("/app");
         r.setUserDestinationPrefix("/user");
     }
+@Override
+public void configureClientInboundChannel(ChannelRegistration registration) {
+    registration.interceptors(new ChannelInterceptor() {
+        @Override
+        public Message<?> preSend(Message<?> message, MessageChannel channel) {
+            StompHeaderAccessor accessor =
+                MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-    @Override
-    public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(new ChannelInterceptor() {
-            @Override
-            public Message<?> preSend(Message<?> message, MessageChannel channel) {
-                StompHeaderAccessor accessor = 
-                    MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-                
-                if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
-                    String username = accessor.getFirstNativeHeader("username");
-                    System.out.println("🔍 INTERCEPTOR - Extracting username: " + username);
-                    System.out.println("🔍 All native headers: " + accessor.toNativeHeaderMap());
-                    
-                    if (username != null && !username.isEmpty()) {
-                        accessor.setUser(new UsernamePasswordAuthenticationToken(username, null));
-                        System.out.println("✅ User Principal set: " + username);
-                    } else {
-                        System.out.println("⚠️ Username header is missing or empty!");
-                    }
+            if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
+                String username = accessor.getFirstNativeHeader("username");
+                System.out.println("🔍 INTERCEPTOR - Extracting username: " + username);
+                System.out.println("🔍 All native headers: " + accessor.toNativeHeaderMap());
+
+                if (username != null && !username.isEmpty()) {
+                    accessor.setUser(() -> username); // ✅ simple Principal
+                    System.out.println("✅ Principal set for user: " + username);
+                } else {
+                    System.out.println("⚠️ Username header missing or empty!");
                 }
-                return message;
             }
-        });
-    }
+            return message;
+        }
+    });
+}
+
 }

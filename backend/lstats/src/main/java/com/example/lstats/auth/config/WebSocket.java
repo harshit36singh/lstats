@@ -40,7 +40,7 @@ public class WebSocket implements WebSocketMessageBrokerConfigurer {
                     MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
                 
                 if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
-                    String username = accessor.getFirstNativeHeader("username");
+                    String username = accessor.getFirstNativeHeader("user-name");
                     System.out.println("🔍 INTERCEPTOR - Extracting username: " + username);
                     System.out.println("🔍 All native headers: " + accessor.toNativeHeaderMap());
                     

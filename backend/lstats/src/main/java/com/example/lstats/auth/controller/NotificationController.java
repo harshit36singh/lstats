@@ -2,6 +2,7 @@ package com.example.lstats.auth.controller;
 
 import java.util.List;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.lstats.auth.dto.NotificationDto;
 import com.example.lstats.model.Notification;
 import com.example.lstats.service.NotificationService;
-
 @RestController
 @RequestMapping("/notification")
 public class NotificationController {
@@ -44,5 +44,19 @@ public class NotificationController {
     @PostMapping("{id}/read")
     public void markasread(@PathVariable Long id) {
         notificationservice.markAsRead(id);
+    }
+
+    // ✅ Self-test endpoint
+    @PostMapping("/test")
+    public ResponseEntity<String> testNotification(@RequestParam String username) {
+        NotificationDto dto = new NotificationDto();
+        dto.setTargetuser(username);
+        dto.setMessage("🚀 Test notification sent at " + System.currentTimeMillis());
+        dto.setType("TEST");
+
+        notificationWebscocketcontroller.sendn(dto);
+
+        System.out.println("✅ Test notification sent to: " + username);
+        return ResponseEntity.ok("Notification sent to " + username);
     }
 }

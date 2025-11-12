@@ -46,7 +46,6 @@ public class NotificationController {
         notificationservice.markAsRead(id);
     }
 
-    // ✅ Self-test endpoint
     @PostMapping("/test")
     public ResponseEntity<String> testNotification(@RequestParam String username) {
         NotificationDto dto = new NotificationDto();

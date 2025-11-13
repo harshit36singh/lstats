@@ -30,7 +30,7 @@ public class FriendRequestController {
 public friendmodel sendreq(@RequestParam Long senderid, @RequestParam Long receiverid) {
 
     friendmodel f = friendrequestService.sendreq(senderid, receiverid);
-    String receiverUsername = f.getReceiver().getUsername().trim().toLowerCase();
+    String receiverUsername = f.getReceiver().getUsername().trim();
 
     System.out.println("🤝 Friend request sent:");
     System.out.println("   Sender: " + f.getSender().getUsername());
@@ -59,7 +59,7 @@ public friendmodel acceptreq(@PathVariable Long requestid) {
     friendmodel f = friendrequestService.acceptreq(requestid);
 
     // ✅ notify the original sender, not receiver
-    String senderUsername = f.getReceiver().getUsername().toLowerCase();
+    String senderUsername = f.getReceiver().getUsername();
 
 
     System.out.println("✅ Friend accepted → notifying: " + senderUsername);

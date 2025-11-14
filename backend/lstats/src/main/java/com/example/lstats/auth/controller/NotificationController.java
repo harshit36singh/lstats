@@ -3,6 +3,7 @@ package com.example.lstats.auth.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,24 +17,52 @@ import com.example.lstats.service.NotificationService;
 @RestController
 @RequestMapping("/notification")
 public class NotificationController {
+
     private final NotificationService notificationservice;
-    private final NotificationWebscocketcontroller notificationWebscocketcontroller;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public NotificationController(NotificationService notificationservice,
-            NotificationWebscocketcontroller notificationWebscocketcontroller) {
+                                  SimpMessagingTemplate messagingTemplate) {
         this.notificationservice = notificationservice;
-        this.notificationWebscocketcontroller = notificationWebscocketcontroller;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @PostMapping("/create")
-    public Notification createNotification(@RequestParam String name, @RequestParam String message) {
+    public Notification createNotification(@RequestParam String name,
+                                           @RequestParam String message) {
+
         Notification n = notificationservice.createNotification(name, message);
-        NotificationDto d = new NotificationDto();
-        d.setTargetuser(name);
-        d.setMessage(message);
-        d.setType("System");
-        notificationWebscocketcontroller.sendn(d);
+
+        NotificationDto dto = new NotificationDto();
+        dto.setTargetuser(name);
+        dto.setMessage(message);
+        dto.setType("System");
+
+        // 🚀 Send WebSocket message
+        messagingTemplate.convertAndSendToUser(
+                name,
+                "/queue/notifications",
+                dto
+        );
+
         return n;
+    }
+
+    @PostMapping("/test")
+    public ResponseEntity<String> testNotification(@RequestParam String username) {
+
+        NotificationDto dto = new NotificationDto();
+        dto.setTargetuser(username);
+        dto.setMessage("🚀 Test notification sent at " + System.currentTimeMillis());
+        dto.setType("TEST");
+
+        messagingTemplate.convertAndSendToUser(
+                username,
+                "/queue/notifications",
+                dto
+        );
+
+        return ResponseEntity.ok("Notification sent to " + username);
     }
 
     @GetMapping("/unread")
@@ -44,18 +73,5 @@ public class NotificationController {
     @PostMapping("{id}/read")
     public void markasread(@PathVariable Long id) {
         notificationservice.markAsRead(id);
-    }
-
-    @PostMapping("/test")
-    public ResponseEntity<String> testNotification(@RequestParam String username) {
-        NotificationDto dto = new NotificationDto();
-        dto.setTargetuser(username);
-        dto.setMessage("🚀 Test notification sent at " + System.currentTimeMillis());
-        dto.setType("TEST");
-
-        notificationWebscocketcontroller.sendn(dto);
-
-        System.out.println("✅ Test notification sent to: " + username);
-        return ResponseEntity.ok("Notification sent to " + username);
     }
 }

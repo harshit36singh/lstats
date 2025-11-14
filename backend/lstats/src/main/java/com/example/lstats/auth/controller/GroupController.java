@@ -20,11 +20,9 @@ import com.example.lstats.service.GroupService;
 @RequestMapping("/groups")
 public class GroupController {
     private final GroupService groupservice;
-    private final NotificationWebscocketcontroller notificationWebscocketcontroller;
 
     public GroupController(GroupService groupservice) {
         this.groupservice = groupservice;
-        this.notificationWebscocketcontroller = null;
     }
 
     @PostMapping("/create")
@@ -48,7 +46,6 @@ public class GroupController {
         dto.setTargetuser(receiver);
         dto.setMessage(sender + " invited you to join group #" + groupid);
         dto.setType("GroupInvite");
-        notificationWebscocketcontroller.sendn(dto);
 
         return invite;
     }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.lstats.auth.dto.NotificationDto;
 import com.example.lstats.model.Notification;
 import com.example.lstats.service.NotificationService;
+
 @RestController
 @RequestMapping("/notification")
 public class NotificationController {

@@ -8,10 +8,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.lstats.auth.dto.FriendRequestDto;
+import com.example.lstats.auth.dto.NotificationDto;
 import com.example.lstats.model.User;
 import com.example.lstats.model.friendmodel;
-import com.example.lstats.repository.UserRepository;
 import com.example.lstats.service.friendrequestservice;
 
 @RestController
@@ -21,64 +20,42 @@ public class FriendRequestController {
     private final friendrequestservice friendrequestService;
     private final SimpMessagingTemplate simpMessagingTemplate;
 
+
     public FriendRequestController(friendrequestservice friendrequestService,
             SimpMessagingTemplate simpMessagingTemplate) {
         this.friendrequestService = friendrequestService;
         this.simpMessagingTemplate = simpMessagingTemplate;
+      
     }
-@PostMapping("/send")
-public friendmodel sendreq(@RequestParam Long senderid, @RequestParam Long receiverid) {
 
-    friendmodel f = friendrequestService.sendreq(senderid, receiverid);
-    String receiverUsername = f.getReceiver().getUsername().trim();
+    @PostMapping("/send")
+    public friendmodel sendreq(@RequestParam Long senderid, @RequestParam Long receiverid) {
 
-    System.out.println("🤝 Friend request sent:");
-    System.out.println("   Sender: " + f.getSender().getUsername());
-    System.out.println("   Receiver: " + receiverUsername);
-    System.out.println("   Attempting to send to user: " + receiverUsername);
+        friendmodel f = friendrequestService.sendreq(senderid, receiverid);
+         String senderUsername = friendrequestService.getUsernamebyid(senderid);
+    String receiverUsername = friendrequestService.getUsernamebyid(receiverid);
 
-    FriendRequestDto dto = new FriendRequestDto(
-            f.getId(),
-            f.getSender().getUsername(),
-            f.getReceiver().getUsername(),
-            f.getStatus().name());
+    NotificationDto dto = new NotificationDto();
+    dto.setTargetuser(receiverUsername);
+    dto.setType("FRIEND_REQUEST");
+    dto.setMessage(senderUsername + " sent you a friend request!");
 
     simpMessagingTemplate.convertAndSendToUser(
             receiverUsername,
-            "/queue/friend",
-            dto);
-
-    System.out.println("📤 Friend request message queued for user: " + receiverUsername);
-
-    return f;
-}
-
-@PostMapping("/accept/{requestid}")
-public friendmodel acceptreq(@PathVariable Long requestid) {
-
-    friendmodel f = friendrequestService.acceptreq(requestid);
-
-    // ✅ notify the original sender, not receiver
-    String senderUsername = f.getReceiver().getUsername();
-
-
-    System.out.println("✅ Friend accepted → notifying: " + senderUsername);
-
-    FriendRequestDto dto = new FriendRequestDto(
-            f.getId(),
-            f.getSender().getUsername(),
-            f.getReceiver().getUsername(),
-            f.getStatus().name() 
-    );
-
-    simpMessagingTemplate.convertAndSendToUser(
-            senderUsername,
-            "/queue/friend",
+            "/queue/notifications",
             dto
     );
 
-    return f;
-}
+        return f;
+    }
+
+    @PostMapping("/accept/{requestid}")
+    public friendmodel acceptreq(@PathVariable Long requestid) {
+
+        friendmodel f = friendrequestService.acceptreq(requestid);
+
+        return f;
+    }
 
     @PostMapping("/reject/{requestid}")
     public friendmodel rejectreq(@PathVariable Long requestid) {

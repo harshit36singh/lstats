@@ -42,6 +42,11 @@ public class friendrequestservice {
 
         }
 
+        public String getUsernamebyid(Long id) {
+                return userrepository.findById(id).map(User::getUsername)
+                                .orElseThrow(() -> new RuntimeException("not found the user"));
+        }
+
         public friendmodel acceptreq(Long reqid) {
                 friendmodel req = Friendrequestrepository.findById(reqid)
                                 .orElseThrow(() -> new RuntimeException("Request not found"));

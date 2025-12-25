@@ -29,7 +29,6 @@ public class friendrequestservice {
                                 .orElseThrow(() -> new RuntimeException("Sender not found."));
                 User reciever = userrepository.findById(recieverid)
                                 .orElseThrow(() -> new RuntimeException("Receiver not found."));
-
                 if (Friendrequestrepository.findBySenderAndReceiver(sender, reciever).isPresent()) {
                         throw new RuntimeException("Request alread sent");
                 }
@@ -41,6 +40,11 @@ public class friendrequestservice {
                                 sender.getUsername() + " sent you a friend request");
                 return Friendrequestrepository.save(req);
 
+        }
+
+        public String getUsernamebyid(Long id) {
+                return userrepository.findById(id).map(User::getUsername)
+                                .orElseThrow(() -> new RuntimeException("not found the user"));
         }
 
         public friendmodel acceptreq(Long reqid) {

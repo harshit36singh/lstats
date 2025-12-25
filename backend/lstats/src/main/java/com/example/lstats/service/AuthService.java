@@ -1,4 +1,4 @@
-package com.example.lstats.auth;
+package com.example.lstats.service;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

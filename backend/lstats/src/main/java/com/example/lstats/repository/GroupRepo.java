@@ -9,4 +9,5 @@ import com.example.lstats.model.User;
 
 public interface GroupRepo extends JpaRepository<Group,Long> {
     List<Group> findByMembersContains(User user);
+    
 }

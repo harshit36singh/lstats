@@ -82,5 +82,9 @@ public class GroupService {
         return inviterepo.findByReceiverAndStatus(user, GroupInvite.InviteStatus.PENDING);
     }
 
+    public List<String> getgroupmembers(Long groupid){
+        Group group=grouprep.findById(groupid).orElseThrow(()->new RuntimeException("Group not found"));
+        return group.getMembers().stream().map(User::getUsername).toList();
+    }
 
 }

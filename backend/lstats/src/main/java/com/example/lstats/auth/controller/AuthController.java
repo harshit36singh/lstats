@@ -3,10 +3,11 @@ package com.example.lstats.auth.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.example.lstats.auth.AuthService;
+
 import com.example.lstats.auth.dto.AuthResponse;
 import com.example.lstats.auth.dto.LoginRequest;
 import com.example.lstats.auth.dto.RegisterRequest;
+import com.example.lstats.service.AuthService;
 import com.example.lstats.service.collegename;
 import jakarta.validation.Valid;
 import java.util.List;

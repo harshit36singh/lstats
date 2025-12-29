@@ -55,7 +55,9 @@ A comprehensive LeetCode statistics tracking application built with Flutter and 
 
 ## 📱 Screenshots
 
-_Coming soon..._
+### 📸 App Overview
+![LStats App Screenshot](frontend/lstats/lib/screenshot/lstatsall.png)
+
 
 ## 🚀 Getting Started
 

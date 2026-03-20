@@ -2,6 +2,9 @@
 
 A comprehensive LeetCode statistics tracking application built with Flutter and Spring Boot that helps developers monitor their coding progress, compete with friends, and stay motivated.
 
+## 📸 App Overview
+![LStats App Screenshot](frontend/lstats/lib/screenshot/LStats.png)
+
 ## 🌟 Features
 
 ### 📊 Statistics & Analytics
@@ -52,12 +55,6 @@ A comprehensive LeetCode statistics tracking application built with Flutter and 
 - **WebSocket**: STOMP over WebSocket for real-time features
 - **Security**: Spring Security with custom configurations
 - **Scheduling**: Automatic chat cleanup and data maintenance
-
-## 📱 Screenshots
-
-### 📸 App Overview
-![LStats App Screenshot](frontend/lstats/lib/screenshot/LStats.png)
-
 
 ## 🚀 Getting Started
 

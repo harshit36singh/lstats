@@ -56,7 +56,7 @@ A comprehensive LeetCode statistics tracking application built with Flutter and 
 ## 📱 Screenshots
 
 ### 📸 App Overview
-![LStats App Screenshot](frontend/lstats/lib/screenshot/lstatsall.png)
+![LStats App Screenshot](frontend/lstats/lib/screenshot/LStats.png)
 
 
 ## 🚀 Getting Started
@@ -245,12 +245,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - `/app/chat.send` - Send chat message
 - `/topic/chat` - Subscribe to chat messages
 - `/user/queue/notifications` - Subscribe to personal notifications
-
-
-## 👥 Contributors
-
-- [Harshit Singh](https://github.com/harshit36singh) - Primary Developer
-- [HarshitSingh3636](https://github.com/HarshitSingh3636) - Contributor
 
 
 
